@@ -18,15 +18,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.rlock.ui.theme.CyanAccent
-import com.example.rlock.ui.theme.GlassCardBg
-import com.example.rlock.ui.theme.GlassCardBorder
+import com.example.rlock.ui.theme.CrimsonAccent
+import com.example.rlock.ui.theme.CrimsonBorder
+import com.example.rlock.ui.theme.CrimsonTextPrimary
+import com.example.rlock.ui.theme.CrimsonTextSecondary
 import com.example.rlock.ui.theme.GlassDialogBg
-import com.example.rlock.ui.theme.TextMutedTeal
-import com.example.rlock.ui.theme.TextPrimaryTeal
-import com.example.rlock.ui.theme.TextSecondaryTeal
 import java.time.LocalTime
 
 @Composable
@@ -42,8 +41,8 @@ fun AddAppointmentDialog(
 
     AlertDialog(
         containerColor = GlassDialogBg,
-        titleContentColor = TextPrimaryTeal,
-        textContentColor = TextSecondaryTeal,
+        titleContentColor = CrimsonTextPrimary,
+        textContentColor = CrimsonTextSecondary,
         onDismissRequest = onDismiss,
         title = { Text("Add Appointment (Triggers Shift Engine)") },
         text = {
@@ -51,74 +50,74 @@ fun AddAppointmentDialog(
                 Text(
                     text = "Inserting an appointment will automatically shift or resize overlapping default blocks.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextMutedTeal
+                    color = CrimsonTextSecondary
                 )
 
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Appointment Title", color = TextMutedTeal) },
+                    label = { Text("Appointment Title", color = CrimsonTextSecondary) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = CyanAccent,
-                        unfocusedBorderColor = GlassCardBorder,
-                        focusedTextColor = TextPrimaryTeal,
-                        unfocusedTextColor = TextPrimaryTeal
+                        focusedBorderColor = CrimsonAccent,
+                        unfocusedBorderColor = CrimsonBorder,
+                        focusedTextColor = CrimsonTextPrimary,
+                        unfocusedTextColor = CrimsonTextPrimary
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Text("Start Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = TextPrimaryTeal)
+                Text("Start Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = CrimsonTextPrimary)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = startHour,
                         onValueChange = { startHour = it },
-                        label = { Text("Hour (0-23)", color = TextMutedTeal) },
+                        label = { Text("Hour (0-23)", color = CrimsonTextSecondary) },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CyanAccent,
-                            unfocusedBorderColor = GlassCardBorder,
-                            focusedTextColor = TextPrimaryTeal,
-                            unfocusedTextColor = TextPrimaryTeal
+                            focusedBorderColor = CrimsonAccent,
+                            unfocusedBorderColor = CrimsonBorder,
+                            focusedTextColor = CrimsonTextPrimary,
+                            unfocusedTextColor = CrimsonTextPrimary
                         ),
                         modifier = Modifier.weight(1f)
                     )
                     OutlinedTextField(
                         value = startMin,
                         onValueChange = { startMin = it },
-                        label = { Text("Minute (0-59)", color = TextMutedTeal) },
+                        label = { Text("Minute (0-59)", color = CrimsonTextSecondary) },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CyanAccent,
-                            unfocusedBorderColor = GlassCardBorder,
-                            focusedTextColor = TextPrimaryTeal,
-                            unfocusedTextColor = TextPrimaryTeal
+                            focusedBorderColor = CrimsonAccent,
+                            unfocusedBorderColor = CrimsonBorder,
+                            focusedTextColor = CrimsonTextPrimary,
+                            unfocusedTextColor = CrimsonTextPrimary
                         ),
                         modifier = Modifier.weight(1f)
                     )
                 }
 
-                Text("End Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = TextPrimaryTeal)
+                Text("End Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = CrimsonTextPrimary)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = endHour,
                         onValueChange = { endHour = it },
-                        label = { Text("Hour (0-23)", color = TextMutedTeal) },
+                        label = { Text("Hour (0-23)", color = CrimsonTextSecondary) },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CyanAccent,
-                            unfocusedBorderColor = GlassCardBorder,
-                            focusedTextColor = TextPrimaryTeal,
-                            unfocusedTextColor = TextPrimaryTeal
+                            focusedBorderColor = CrimsonAccent,
+                            unfocusedBorderColor = CrimsonBorder,
+                            focusedTextColor = CrimsonTextPrimary,
+                            unfocusedTextColor = CrimsonTextPrimary
                         ),
                         modifier = Modifier.weight(1f)
                     )
                     OutlinedTextField(
                         value = endMin,
                         onValueChange = { endMin = it },
-                        label = { Text("Minute (0-59)", color = TextMutedTeal) },
+                        label = { Text("Minute (0-59)", color = CrimsonTextSecondary) },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CyanAccent,
-                            unfocusedBorderColor = GlassCardBorder,
-                            focusedTextColor = TextPrimaryTeal,
-                            unfocusedTextColor = TextPrimaryTeal
+                            focusedBorderColor = CrimsonAccent,
+                            unfocusedBorderColor = CrimsonBorder,
+                            focusedTextColor = CrimsonTextPrimary,
+                            unfocusedTextColor = CrimsonTextPrimary
                         ),
                         modifier = Modifier.weight(1f)
                     )
@@ -142,14 +141,14 @@ fun AddAppointmentDialog(
                         endTime
                     )
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = CyanAccent)
+                colors = ButtonDefaults.buttonColors(containerColor = CrimsonAccent, contentColor = Color.White)
             ) {
-                Text("Insert Appointment", color = GlassCardBg, fontWeight = FontWeight.Bold)
+                Text("Insert Appointment", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = TextMutedTeal)
+                Text("Cancel", color = CrimsonTextSecondary)
             }
         }
     )

@@ -34,8 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.rlock.ui.theme.CyanAccent
-import com.example.rlock.ui.theme.GlassCardBg
+import com.example.rlock.ui.theme.CrimsonAccent
+import com.example.rlock.ui.theme.GlassCrimson
 import com.example.rlock.ui.theme.GlassNavBarBg
 
 @Composable
@@ -66,8 +66,8 @@ fun RLockSpeedDialFab(
                         onQuickAddBlockClick()
                     },
                     shape = RoundedCornerShape(24.dp),
-                    color = GlassCardBg,
-                    border = BorderStroke(1.dp, CyanAccent)
+                    color = GlassCrimson,
+                    border = BorderStroke(1.dp, CrimsonAccent)
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
@@ -76,7 +76,7 @@ fun RLockSpeedDialFab(
                         Icon(
                             imageVector = Icons.Default.Schedule,
                             contentDescription = null,
-                            tint = CyanAccent,
+                            tint = CrimsonAccent,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -84,7 +84,7 @@ fun RLockSpeedDialFab(
                             text = "QUICK ADD BLOCK",
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
-                            color = CyanAccent
+                            color = CrimsonAccent
                         )
                     }
                 }
@@ -96,8 +96,8 @@ fun RLockSpeedDialFab(
                         onAddAppointmentClick()
                     },
                     shape = RoundedCornerShape(24.dp),
-                    color = GlassCardBg,
-                    border = BorderStroke(1.dp, CyanAccent)
+                    color = GlassCrimson,
+                    border = BorderStroke(1.dp, CrimsonAccent)
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
@@ -106,7 +106,7 @@ fun RLockSpeedDialFab(
                         Icon(
                             imageVector = Icons.Default.Event,
                             contentDescription = null,
-                            tint = CyanAccent,
+                            tint = CrimsonAccent,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -114,7 +114,7 @@ fun RLockSpeedDialFab(
                             text = "ADD APPOINTMENT",
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
-                            color = CyanAccent
+                            color = CrimsonAccent
                         )
                     }
                 }
@@ -128,7 +128,7 @@ fun RLockSpeedDialFab(
             onClick = { expanded = !expanded },
             shape = RoundedCornerShape(24.dp),
             color = GlassNavBarBg,
-            border = BorderStroke(1.dp, CyanAccent)
+            border = BorderStroke(1.dp, CrimsonAccent)
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
@@ -137,7 +137,7 @@ fun RLockSpeedDialFab(
                 Icon(
                     imageVector = if (expanded) Icons.Default.Close else Icons.Default.Add,
                     contentDescription = "Add",
-                    tint = CyanAccent,
+                    tint = CrimsonAccent,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -146,7 +146,7 @@ fun RLockSpeedDialFab(
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 0.5.sp,
-                    color = CyanAccent
+                    color = CrimsonAccent
                 )
             }
         }

@@ -26,16 +26,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.rlock.model.CustomCategory
-import com.example.rlock.ui.theme.CyanAccent
-import com.example.rlock.ui.theme.GlassCardBg
-import com.example.rlock.ui.theme.GlassCardBorder
+import com.example.rlock.ui.theme.CrimsonAccent
+import com.example.rlock.ui.theme.CrimsonBorder
+import com.example.rlock.ui.theme.CrimsonTextPrimary
+import com.example.rlock.ui.theme.CrimsonTextSecondary
 import com.example.rlock.ui.theme.GlassDialogBg
-import com.example.rlock.ui.theme.TextMutedTeal
-import com.example.rlock.ui.theme.TextPrimaryTeal
-import com.example.rlock.ui.theme.TextSecondaryTeal
 import java.time.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,8 +68,8 @@ fun AddQuickBlockDialog(
 
     AlertDialog(
         containerColor = GlassDialogBg,
-        titleContentColor = TextPrimaryTeal,
-        textContentColor = TextSecondaryTeal,
+        titleContentColor = CrimsonTextPrimary,
+        textContentColor = CrimsonTextSecondary,
         onDismissRequest = onDismiss,
         title = { Text("Quick Add One-Off Block") },
         text = {
@@ -78,19 +77,19 @@ fun AddQuickBlockDialog(
                 Text(
                     text = "Adds a one-time block to today's schedule without altering default templates.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextMutedTeal
+                    color = CrimsonTextSecondary
                 )
 
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Block Title", color = TextMutedTeal) },
+                    label = { Text("Block Title", color = CrimsonTextSecondary) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = CyanAccent,
-                        unfocusedBorderColor = GlassCardBorder,
-                        focusedTextColor = TextPrimaryTeal,
-                        unfocusedTextColor = TextPrimaryTeal
+                        focusedBorderColor = CrimsonAccent,
+                        unfocusedBorderColor = CrimsonBorder,
+                        focusedTextColor = CrimsonTextPrimary,
+                        unfocusedTextColor = CrimsonTextPrimary
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -104,13 +103,13 @@ fun AddQuickBlockDialog(
                         value = category.name,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Category", color = TextMutedTeal) },
+                        label = { Text("Category", color = CrimsonTextSecondary) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CyanAccent,
-                            unfocusedBorderColor = GlassCardBorder,
-                            focusedTextColor = TextPrimaryTeal,
-                            unfocusedTextColor = TextPrimaryTeal
+                            focusedBorderColor = CrimsonAccent,
+                            unfocusedBorderColor = CrimsonBorder,
+                            focusedTextColor = CrimsonTextPrimary,
+                            unfocusedTextColor = CrimsonTextPrimary
                         ),
                         modifier = Modifier
                             .menuAnchor(MenuAnchorType.PrimaryNotEditable)
@@ -122,7 +121,7 @@ fun AddQuickBlockDialog(
                     ) {
                         CustomCategory.defaultCategories.filter { it.id != "appointment" }.forEach { cat ->
                             DropdownMenuItem(
-                                text = { Text(cat.name, color = TextPrimaryTeal) },
+                                text = { Text(cat.name, color = CrimsonTextPrimary) },
                                 onClick = {
                                     category = cat
                                     categoryExpanded = false
@@ -132,57 +131,57 @@ fun AddQuickBlockDialog(
                     }
                 }
 
-                Text("Start Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = TextPrimaryTeal)
+                Text("Start Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = CrimsonTextPrimary)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = startHour,
                         onValueChange = { startHour = it },
-                        label = { Text("Start Hr", color = TextMutedTeal) },
+                        label = { Text("Start Hr", color = CrimsonTextSecondary) },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CyanAccent,
-                            unfocusedBorderColor = GlassCardBorder,
-                            focusedTextColor = TextPrimaryTeal,
-                            unfocusedTextColor = TextPrimaryTeal
+                            focusedBorderColor = CrimsonAccent,
+                            unfocusedBorderColor = CrimsonBorder,
+                            focusedTextColor = CrimsonTextPrimary,
+                            unfocusedTextColor = CrimsonTextPrimary
                         ),
                         modifier = Modifier.weight(1f)
                     )
                     OutlinedTextField(
                         value = startMin,
                         onValueChange = { startMin = it },
-                        label = { Text("Min", color = TextMutedTeal) },
+                        label = { Text("Min", color = CrimsonTextSecondary) },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CyanAccent,
-                            unfocusedBorderColor = GlassCardBorder,
-                            focusedTextColor = TextPrimaryTeal,
-                            unfocusedTextColor = TextPrimaryTeal
+                            focusedBorderColor = CrimsonAccent,
+                            unfocusedBorderColor = CrimsonBorder,
+                            focusedTextColor = CrimsonTextPrimary,
+                            unfocusedTextColor = CrimsonTextPrimary
                         ),
                         modifier = Modifier.weight(1f)
                     )
                 }
 
-                Text("End Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = TextPrimaryTeal)
+                Text("End Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = CrimsonTextPrimary)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = endHour,
                         onValueChange = { endHour = it },
-                        label = { Text("End Hr", color = TextMutedTeal) },
+                        label = { Text("End Hr", color = CrimsonTextSecondary) },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CyanAccent,
-                            unfocusedBorderColor = GlassCardBorder,
-                            focusedTextColor = TextPrimaryTeal,
-                            unfocusedTextColor = TextPrimaryTeal
+                            focusedBorderColor = CrimsonAccent,
+                            unfocusedBorderColor = CrimsonBorder,
+                            focusedTextColor = CrimsonTextPrimary,
+                            unfocusedTextColor = CrimsonTextPrimary
                         ),
                         modifier = Modifier.weight(1f)
                     )
                     OutlinedTextField(
                         value = endMin,
                         onValueChange = { endMin = it },
-                        label = { Text("Min", color = TextMutedTeal) },
+                        label = { Text("Min", color = CrimsonTextSecondary) },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CyanAccent,
-                            unfocusedBorderColor = GlassCardBorder,
-                            focusedTextColor = TextPrimaryTeal,
-                            unfocusedTextColor = TextPrimaryTeal
+                            focusedBorderColor = CrimsonAccent,
+                            unfocusedBorderColor = CrimsonBorder,
+                            focusedTextColor = CrimsonTextPrimary,
+                            unfocusedTextColor = CrimsonTextPrimary
                         ),
                         modifier = Modifier.weight(1f)
                     )
@@ -193,38 +192,41 @@ fun AddQuickBlockDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Shiftable Block", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = TextPrimaryTeal)
+                    Text("Shiftable Block", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = CrimsonTextPrimary)
                     Switch(
                         checked = shiftable,
                         onCheckedChange = { shiftable = it },
-                        colors = SwitchDefaults.colors(checkedThumbColor = CyanAccent)
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = CrimsonAccent,
+                            checkedTrackColor = CrimsonAccent.copy(alpha = 0.5f)
+                        )
                     )
                 }
 
                 if (shiftable) {
-                    Text("Fallback Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = TextPrimaryTeal)
+                    Text("Fallback Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = CrimsonTextPrimary)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
                             value = fallbackStartHour,
                             onValueChange = { fallbackStartHour = it },
-                            label = { Text("Start Hr", color = TextMutedTeal) },
+                            label = { Text("Start Hr", color = CrimsonTextSecondary) },
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = CyanAccent,
-                                unfocusedBorderColor = GlassCardBorder,
-                                focusedTextColor = TextPrimaryTeal,
-                                unfocusedTextColor = TextPrimaryTeal
+                                focusedBorderColor = CrimsonAccent,
+                                unfocusedBorderColor = CrimsonBorder,
+                                focusedTextColor = CrimsonTextPrimary,
+                                unfocusedTextColor = CrimsonTextPrimary
                             ),
                             modifier = Modifier.weight(1f)
                         )
                         OutlinedTextField(
                             value = fallbackStartMin,
                             onValueChange = { fallbackStartMin = it },
-                            label = { Text("Min", color = TextMutedTeal) },
+                            label = { Text("Min", color = CrimsonTextSecondary) },
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = CyanAccent,
-                                unfocusedBorderColor = GlassCardBorder,
-                                focusedTextColor = TextPrimaryTeal,
-                                unfocusedTextColor = TextPrimaryTeal
+                                focusedBorderColor = CrimsonAccent,
+                                unfocusedBorderColor = CrimsonBorder,
+                                focusedTextColor = CrimsonTextPrimary,
+                                unfocusedTextColor = CrimsonTextPrimary
                             ),
                             modifier = Modifier.weight(1f)
                         )
@@ -233,24 +235,24 @@ fun AddQuickBlockDialog(
                         OutlinedTextField(
                             value = fallbackEndHour,
                             onValueChange = { fallbackEndHour = it },
-                            label = { Text("End Hr", color = TextMutedTeal) },
+                            label = { Text("End Hr", color = CrimsonTextSecondary) },
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = CyanAccent,
-                                unfocusedBorderColor = GlassCardBorder,
-                                focusedTextColor = TextPrimaryTeal,
-                                unfocusedTextColor = TextPrimaryTeal
+                                focusedBorderColor = CrimsonAccent,
+                                unfocusedBorderColor = CrimsonBorder,
+                                focusedTextColor = CrimsonTextPrimary,
+                                unfocusedTextColor = CrimsonTextPrimary
                             ),
                             modifier = Modifier.weight(1f)
                         )
                         OutlinedTextField(
                             value = fallbackEndMin,
                             onValueChange = { fallbackEndMin = it },
-                            label = { Text("Min", color = TextMutedTeal) },
+                            label = { Text("Min", color = CrimsonTextSecondary) },
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = CyanAccent,
-                                unfocusedBorderColor = GlassCardBorder,
-                                focusedTextColor = TextPrimaryTeal,
-                                unfocusedTextColor = TextPrimaryTeal
+                                focusedBorderColor = CrimsonAccent,
+                                unfocusedBorderColor = CrimsonBorder,
+                                focusedTextColor = CrimsonTextPrimary,
+                                unfocusedTextColor = CrimsonTextPrimary
                             ),
                             modifier = Modifier.weight(1f)
                         )
@@ -291,14 +293,14 @@ fun AddQuickBlockDialog(
                         fbEnd
                     )
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = CyanAccent)
+                colors = ButtonDefaults.buttonColors(containerColor = CrimsonAccent, contentColor = Color.White)
             ) {
-                Text("Add Quick Block", color = GlassCardBg, fontWeight = FontWeight.Bold)
+                Text("Add Quick Block", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = TextMutedTeal)
+                Text("Cancel", color = CrimsonTextSecondary)
             }
         }
     )

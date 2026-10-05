@@ -10,18 +10,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationBar
@@ -36,9 +35,9 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,14 +49,15 @@ import androidx.compose.ui.unit.dp
 import com.example.rlock.ui.components.AgendaList
 import com.example.rlock.ui.components.ScorecardHeader
 import com.example.rlock.ui.screens.SettingsScreen
-import com.example.rlock.ui.theme.CyanAccent
-import com.example.rlock.ui.theme.DarkTealBg
-import com.example.rlock.ui.theme.GlassCardBorder
+import com.example.rlock.ui.screens.SideQuestScreen
+import com.example.rlock.ui.theme.CrimsonAccent
+import com.example.rlock.ui.theme.CrimsonBackground
+import com.example.rlock.ui.theme.CrimsonBorder
+import com.example.rlock.ui.theme.CrimsonTextPrimary
+import com.example.rlock.ui.theme.CrimsonTextSecondary
 import com.example.rlock.ui.theme.GlassDialogBg
 import com.example.rlock.ui.theme.GlassNavBarBg
-import com.example.rlock.ui.theme.TextMutedTeal
-import com.example.rlock.ui.theme.TextPrimaryTeal
-import com.example.rlock.ui.theme.TextSecondaryTeal
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,7 +66,6 @@ fun RLockApp(
 ) {
     val agendaBlocks by viewModel.agendaBlocks.collectAsState()
     val scorecard by viewModel.scorecard.collectAsState()
-    val templates by viewModel.templates.collectAsState()
 
     val pagerState = rememberPagerState(pageCount = { 2 })
     val coroutineScope = rememberCoroutineScope()
@@ -76,7 +75,7 @@ fun RLockApp(
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Scaffold(
-        containerColor = DarkTealBg,
+        containerColor = CrimsonBackground,
         topBar = {
             TopAppBar(
                 title = {
@@ -87,28 +86,27 @@ fun RLockApp(
                     )
                 },
                 actions = {
-                    androidx.compose.material3.IconButton(onClick = {
+                    IconButton(onClick = {
                         showSettingsScreen = true
                     }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings", tint = TextPrimaryTeal)
+                        Icon(Icons.Default.Settings, contentDescription = "Settings", tint = CrimsonTextPrimary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = DarkTealBg,
-                    titleContentColor = TextPrimaryTeal
+                    containerColor = CrimsonBackground,
+                    titleContentColor = CrimsonTextPrimary
                 )
             )
         },
         bottomBar = {
-
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp, vertical = 8.dp)
                     .clip(RoundedCornerShape(24.dp)),
                 shape = RoundedCornerShape(24.dp),
-                color = GlassNavBarBg,
-                border = BorderStroke(1.dp, GlassCardBorder)
+                color = Color(0xCC140B0D),
+                border = BorderStroke(1.dp, CrimsonBorder)
             ) {
                 NavigationBar(
                     containerColor = Color.Transparent,
@@ -126,17 +124,17 @@ fun RLockApp(
                             )
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = CyanAccent,
-                            selectedTextColor = CyanAccent,
-                            unselectedIconColor = TextMutedTeal,
-                            unselectedTextColor = TextMutedTeal,
-                            indicatorColor = DarkTealBg.copy(alpha = 0.6f)
+                            selectedIconColor = CrimsonAccent,
+                            selectedTextColor = CrimsonAccent,
+                            unselectedIconColor = CrimsonTextSecondary,
+                            unselectedTextColor = CrimsonTextSecondary,
+                            indicatorColor = CrimsonBackground.copy(alpha = 0.6f)
                         )
                     )
                     NavigationBarItem(
                         selected = pagerState.currentPage == 1,
                         onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
-                        icon = { Icon(androidx.compose.material.icons.Icons.Default.CheckCircle, contentDescription = "Side Quests") },
+                        icon = { Icon(Icons.Default.CheckCircle, contentDescription = "Side Quests") },
                         label = {
                             Text(
                                 "SIDE QUEST",
@@ -145,17 +143,16 @@ fun RLockApp(
                             )
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = CyanAccent,
-                            selectedTextColor = CyanAccent,
-                            unselectedIconColor = TextMutedTeal,
-                            unselectedTextColor = TextMutedTeal,
-                            indicatorColor = DarkTealBg.copy(alpha = 0.6f)
+                            selectedIconColor = CrimsonAccent,
+                            selectedTextColor = CrimsonAccent,
+                            unselectedIconColor = CrimsonTextSecondary,
+                            unselectedTextColor = CrimsonTextSecondary,
+                            indicatorColor = CrimsonBackground.copy(alpha = 0.6f)
                         )
                     )
                 }
             }
-        },
-
+        }
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -195,20 +192,18 @@ fun RLockApp(
                     }
                 } else {
                     // Side Quest Screen
-                    com.example.rlock.ui.screens.SideQuestScreen(viewModel = viewModel)
+                    SideQuestScreen(viewModel = viewModel)
                 }
             }
         }
     }
-
-
 
     if (showScorecardBottomSheet) {
         ModalBottomSheet(
             onDismissRequest = { showScorecardBottomSheet = false },
             sheetState = bottomSheetState,
             containerColor = GlassDialogBg,
-            contentColor = TextPrimaryTeal
+            contentColor = CrimsonTextPrimary
         ) {
             ScorecardBottomSheetContent(
                 metrics = scorecard.metrics,
@@ -226,7 +221,7 @@ fun RLockApp(
         ) {
             Surface(
                 modifier = Modifier.fillMaxSize(),
-                color = DarkTealBg
+                color = CrimsonBackground
             ) {
                 SettingsScreen(
                     viewModel = viewModel,
@@ -251,7 +246,7 @@ fun ScorecardBottomSheetContent(
             text = "End-of-Day Scorecard",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            color = TextPrimaryTeal
+            color = CrimsonTextPrimary
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -305,13 +300,13 @@ fun ScorecardChecklistRow(text: String, isCompleted: Boolean) {
         Icon(
             imageVector = if (isCompleted) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
             contentDescription = null,
-            tint = if (isCompleted) CyanAccent else TextMutedTeal
+            tint = if (isCompleted) CrimsonAccent else CrimsonTextSecondary
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = text,
             style = MaterialTheme.typography.bodyLarge,
-            color = if (isCompleted) TextMutedTeal else TextSecondaryTeal,
+            color = if (isCompleted) CrimsonTextSecondary else CrimsonTextPrimary,
             textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None
         )
     }

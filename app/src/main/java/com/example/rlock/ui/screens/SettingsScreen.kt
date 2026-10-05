@@ -34,8 +34,8 @@ import com.example.rlock.ui.theme.*
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-val GlassCardContainer = Color(0x221E2E2B)
-val GlassCardBorderColor = Color(0x334ECCA3)
+val GlassCardContainer = GlassCrimson
+val GlassCardBorderColor = CrimsonBorder
 val SettingsCardShape = RoundedCornerShape(20.dp)
 
 @OptIn(ExperimentalMaterial3Api::class)

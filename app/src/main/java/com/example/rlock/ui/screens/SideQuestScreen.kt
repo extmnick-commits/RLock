@@ -22,7 +22,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.rlock.model.SideQuest
 import com.example.rlock.ui.RLockViewModel
 import com.example.rlock.ui.theme.*
@@ -53,12 +52,12 @@ fun SideQuestScreen(
                     text = "⚔️ Side Quests",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimaryTeal
+                    color = CrimsonTextPrimary
                 )
                 Text(
                     text = "$completedCount completed / $totalCount total",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextMutedTeal
+                    color = CrimsonTextSecondary
                 )
             }
             
@@ -67,7 +66,7 @@ fun SideQuestScreen(
                     Icon(
                         imageVector = Icons.Default.Clear,
                         contentDescription = "Clear Completed",
-                        tint = CyanAccent
+                        tint = CrimsonAccent
                     )
                 }
             }
@@ -113,15 +112,15 @@ fun SideQuestInputField(onAdd: (String) -> Unit) {
             onValueChange = { text = it },
             modifier = Modifier
                 .weight(1f)
-                .background(GlassCardBg, RoundedCornerShape(12.dp)),
-            placeholder = { Text("Add quick side quest...", color = TextMutedTeal) },
+                .background(GlassCrimson, RoundedCornerShape(12.dp)),
+            placeholder = { Text("Add quick side quest...", color = CrimsonTextSecondary) },
             singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = CyanAccent,
-                unfocusedBorderColor = GlassCardBorder,
-                cursorColor = CyanAccent,
-                focusedTextColor = TextPrimaryTeal,
-                unfocusedTextColor = TextPrimaryTeal
+                focusedBorderColor = CrimsonAccent,
+                unfocusedBorderColor = CrimsonBorder,
+                cursorColor = CrimsonAccent,
+                focusedTextColor = CrimsonTextPrimary,
+                unfocusedTextColor = CrimsonTextPrimary
             ),
             shape = RoundedCornerShape(12.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -145,10 +144,10 @@ fun SideQuestInputField(onAdd: (String) -> Unit) {
                 }
             },
             modifier = Modifier
-                .background(CyanAccent.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
-                .border(1.dp, CyanAccent.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                .background(CrimsonAccent.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+                .border(1.dp, CrimsonAccent.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Add", tint = CyanAccent)
+            Icon(Icons.Default.Add, contentDescription = "Add", tint = CrimsonAccent)
         }
     }
 }
@@ -159,9 +158,9 @@ fun SideQuestCard(
     onToggle: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val bgColor = if (quest.isCompleted) GlassCardBg.copy(alpha = 0.1f) else GlassCardBg
-    val borderColor = if (quest.isCompleted) GlassCardBorder.copy(alpha = 0.3f) else GlassCardBorder
-    val textColor = if (quest.isCompleted) TextMutedTeal else TextPrimaryTeal
+    val bgColor = if (quest.isCompleted) GlassCrimson.copy(alpha = 0.5f) else GlassCrimson
+    val borderColor = if (quest.isCompleted) CrimsonBorder.copy(alpha = 0.3f) else CrimsonBorder
+    val textColor = if (quest.isCompleted) CrimsonTextSecondary else CrimsonTextPrimary
 
     Row(
         modifier = Modifier
@@ -176,9 +175,9 @@ fun SideQuestCard(
             checked = quest.isCompleted,
             onCheckedChange = { onToggle() },
             colors = CheckboxDefaults.colors(
-                checkedColor = CyanAccent,
-                uncheckedColor = TextMutedTeal,
-                checkmarkColor = DarkTealBg
+                checkedColor = CrimsonAccent,
+                uncheckedColor = CrimsonTextSecondary,
+                checkmarkColor = Color.White
             )
         )
         
@@ -196,7 +195,7 @@ fun SideQuestCard(
             Icon(
                 imageVector = Icons.Default.Delete,
                 contentDescription = "Delete",
-                tint = TextMutedTeal
+                tint = CrimsonTextSecondary
             )
         }
     }

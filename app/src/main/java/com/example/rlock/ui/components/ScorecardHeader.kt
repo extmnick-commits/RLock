@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
@@ -30,14 +31,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.rlock.model.MetricGoal
-import com.example.rlock.ui.theme.CyanAccent
-import com.example.rlock.ui.theme.GlassCardBg
-import com.example.rlock.ui.theme.GlassCardBorder
-import com.example.rlock.ui.theme.GlassCardHeaderBg
-import com.example.rlock.ui.theme.MintGaugeTrack
-import com.example.rlock.ui.theme.TextMutedTeal
-import com.example.rlock.ui.theme.TextPrimaryTeal
-import com.example.rlock.ui.theme.TextSecondaryTeal
+import com.example.rlock.ui.theme.CrimsonAccent
+import com.example.rlock.ui.theme.CrimsonBorder
+import com.example.rlock.ui.theme.CrimsonGaze
+import com.example.rlock.ui.theme.CrimsonTextPrimary
+import com.example.rlock.ui.theme.CrimsonTextSecondary
+import com.example.rlock.ui.theme.GlassCrimson
+import com.example.rlock.ui.theme.GlassCrimsonHighlight
 
 @Composable
 fun ScorecardHeader(
@@ -55,7 +55,7 @@ fun ScorecardHeader(
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             letterSpacing = 1.sp,
-            color = TextMutedTeal,
+            color = CrimsonTextSecondary,
             modifier = Modifier.padding(horizontal = 18.dp, vertical = 4.dp)
         )
 
@@ -83,8 +83,8 @@ private fun MetricCard(
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
-        color = GlassCardBg,
-        border = BorderStroke(1.dp, GlassCardBorder)
+        color = GlassCrimson,
+        border = BorderStroke(1.dp, CrimsonBorder)
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
@@ -94,7 +94,7 @@ private fun MetricCard(
                 text = metric.name,
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Medium,
-                color = TextSecondaryTeal,
+                color = CrimsonTextSecondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -114,14 +114,14 @@ private fun MetricCard(
                 Surface(
                     onClick = onIncrement,
                     shape = RoundedCornerShape(12.dp),
-                    color = GlassCardHeaderBg,
-                    border = BorderStroke(1.dp, CyanAccent.copy(alpha = 0.5f))
+                    color = GlassCrimsonHighlight,
+                    border = BorderStroke(1.dp, CrimsonAccent.copy(alpha = 0.5f))
                 ) {
                     Text(
                         text = "+1",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
-                        color = CyanAccent,
+                        color = CrimsonAccent,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
                     )
                 }
@@ -150,7 +150,7 @@ private fun CircularGauge(
 
             // Background Track Ring
             drawArc(
-                color = MintGaugeTrack,
+                color = Color(0x22FF5252),
                 startAngle = 0f,
                 sweepAngle = 360f,
                 useCenter = false,
@@ -161,7 +161,7 @@ private fun CircularGauge(
 
             // Progress Arc
             drawArc(
-                color = CyanAccent,
+                color = CrimsonGaze,
                 startAngle = -90f,
                 sweepAngle = 360f * progress,
                 useCenter = false,
@@ -179,12 +179,12 @@ private fun CircularGauge(
                 text = "$current",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = TextPrimaryTeal
+                color = CrimsonTextPrimary
             )
             Text(
                 text = "/$target",
                 style = MaterialTheme.typography.labelSmall,
-                color = TextMutedTeal
+                color = CrimsonTextSecondary
             )
         }
     }

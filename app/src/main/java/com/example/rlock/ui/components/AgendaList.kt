@@ -24,12 +24,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.rlock.model.AgendaBlock
-import com.example.rlock.ui.theme.CyanAccent
-import com.example.rlock.ui.theme.DarkTealBg
-import com.example.rlock.ui.theme.GlassCardBg
-import com.example.rlock.ui.theme.GlassCardBorder
-import com.example.rlock.ui.theme.TextMutedTeal
-import com.example.rlock.ui.theme.TextPrimaryTeal
+import com.example.rlock.ui.theme.CrimsonAccent
+import com.example.rlock.ui.theme.CrimsonBackground
+import com.example.rlock.ui.theme.CrimsonBorder
+import com.example.rlock.ui.theme.CrimsonTextPrimary
+import com.example.rlock.ui.theme.CrimsonTextSecondary
+import com.example.rlock.ui.theme.GlassCrimson
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -53,7 +53,7 @@ fun AgendaList(
                 text = "No agenda blocks scheduled for today.",
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
-                color = TextMutedTeal
+                color = CrimsonTextSecondary
             )
         }
     } else {
@@ -73,7 +73,7 @@ fun AgendaList(
                 val headerTitle = section.ifEmpty { "Other" }
                 stickyHeader {
                     Surface(
-                        color = DarkTealBg.copy(alpha = 0.95f),
+                        color = CrimsonBackground.copy(alpha = 0.95f),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
@@ -105,14 +105,14 @@ fun AgendaList(
                     Surface(
                         onClick = onOpenScorecard,
                         shape = RoundedCornerShape(24.dp),
-                        color = GlassCardBg,
-                        border = BorderStroke(1.dp, GlassCardBorder)
+                        color = GlassCrimson,
+                        border = BorderStroke(1.dp, CrimsonBorder)
                     ) {
                         Text(
                             text = "🎯 End-of-Day Scorecard",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = CyanAccent,
+                            color = CrimsonAccent,
                             modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
                         )
                     }
@@ -142,13 +142,13 @@ private fun SectionHeaderRow(
             text = "$icon $sectionName",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            color = TextPrimaryTeal
+            color = CrimsonTextPrimary
         )
         Spacer(modifier = Modifier.width(10.dp))
         HorizontalDivider(
             modifier = Modifier.weight(1f),
             thickness = 1.dp,
-            color = GlassCardBorder.copy(alpha = 0.4f)
+            color = CrimsonBorder.copy(alpha = 0.4f)
         )
     }
 }

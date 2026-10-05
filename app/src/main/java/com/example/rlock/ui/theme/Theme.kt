@@ -4,27 +4,27 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 
-private val GlassTealColorScheme = darkColorScheme(
-    primary = CyanAccent,
-    onPrimary = DarkTealBg,
-    primaryContainer = GlassCardBg,
-    onPrimaryContainer = TextPrimaryTeal,
-    secondary = MintGaugeProgress,
-    onSecondary = DarkTealBg,
-    secondaryContainer = GlassCardHeaderBg,
-    onSecondaryContainer = TextSecondaryTeal,
+private val DarkColorScheme = darkColorScheme(
+    primary = CrimsonAccent,
+    onPrimary = CrimsonBackground,
+    primaryContainer = GlassCrimson,
+    onPrimaryContainer = CrimsonTextPrimary,
+    secondary = CrimsonGaze,
+    onSecondary = CrimsonBackground,
+    secondaryContainer = GlassCrimsonHighlight,
+    onSecondaryContainer = CrimsonTextSecondary,
     tertiary = GoldStarColor,
-    onTertiary = DarkTealBg,
+    onTertiary = CrimsonBackground,
     tertiaryContainer = GoldGlassBg,
-    onTertiaryContainer = TextPrimaryTeal,
-    background = DarkTealBg,
-    onBackground = TextPrimaryTeal,
-    surface = GlassCardBg,
-    onSurface = TextPrimaryTeal,
-    surfaceVariant = GlassCardHeaderBg,
-    onSurfaceVariant = TextSecondaryTeal,
-    outline = GlassCardBorder,
-    outlineVariant = TextMutedTeal
+    onTertiaryContainer = CrimsonTextPrimary,
+    background = CrimsonBackground,
+    onBackground = CrimsonTextPrimary,
+    surface = CrimsonSurface,
+    onSurface = CrimsonTextPrimary,
+    surfaceVariant = GlassCrimsonHighlight,
+    onSurfaceVariant = CrimsonTextSecondary,
+    outline = CrimsonBorder,
+    outlineVariant = CrimsonTextSecondary
 )
 
 @Composable
@@ -34,7 +34,7 @@ fun RLockTheme(
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colorScheme = GlassTealColorScheme,
+        colorScheme = DarkColorScheme,
         content = content
     )
 }

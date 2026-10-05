@@ -2,40 +2,46 @@ package com.example.rlock.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// RLock Glassmorphism Dark Teal Theme Palette
+// RLock Glassmorphism Dark Crimson Theme Palette
 
-// Canvas & Background
-val DarkTealBg = Color(0xFF0C191B)
-val DarkTealGradientEnd = Color(0xFF071012)
+// Background & Surfaces
+val CrimsonBackground = Color(0xFF0F0A0B)       // Ultra-dark tinted obsidian
+val CrimsonSurface = Color(0xFF1A0E10)          // Slightly lighter card base
+val GlassCrimson = Color(0x333D1418)            // Translucent glass fill (~20% opacity)
+val GlassCrimsonHighlight = Color(0x555C1A21)   // Active/Displaced translucent fill
 
-// Glass Containers
-val GlassCardBg = Color(0x3D163034)
-val GlassCardBorder = Color(0x404DD0E1)
-val GlassCardHeaderBg = Color(0x550F2528)
+// Accents & Borders
+val CrimsonAccent = Color(0xFFE53935)           // Vibrant primary crimson
+val CrimsonGaze = Color(0xFFFF5252)             // High-contrast gauge fill
+val CrimsonBorder = Color(0x44FF5252)           // Sleek 1dp translucent glass stroke
+val CrimsonTextPrimary = Color(0xFFFCE8E9)      // Soft white with faint warm tint
+val CrimsonTextSecondary = Color(0xFFB39295)    // Muted tinted gray
 
-// Accents & Glows
-val CyanAccent = Color(0xFF4DD0E1)
-val CyanGlow = Color(0x804DD0E1)
-val MintGaugeProgress = Color(0xFF38D39F)
-val MintGaugeTrack = Color(0x334DD0E1)
+// Additional Glass & UI colors
+val GlassNavBarBg = Color(0xCC140B0D)            // Semi-transparent dark crimson blur
+val GlassDialogBg = Color(0xF51A0E10)            // Elevated dialog fill
+val CrimsonGaugeTrack = Color(0x22FF5252)        // Gauge track background
 
-// Gold Appointment Glass
+// Gold Appointment Glass (Preserved for priority appointment styling)
 val GoldGlassBg = Color(0x3B332B14)
 val GoldGlassBorder = Color(0xFFD4AF37)
 val GoldStarColor = Color(0xFFFFD54F)
 
-// Text & Icons
-val TextPrimaryTeal = Color(0xFFE0F2F1)
-val TextSecondaryTeal = Color(0xFFB0C4C5)
-val TextMutedTeal = Color(0xFF6B8A8C)
-
-// Nav Bar & Floating Containers
-val GlassNavBarBg = Color(0xD9091A1D)
-val GlassDialogBg = Color(0xF50D2024)
-
-// Legacy compatibility fallbacks
-val AmberNoticeBg = Color(0x3B3A2C10)
-val AmberNoticeBorder = Color(0xFFD4AF37)
-val AmberNoticeText = Color(0xFFFFD54F)
+// Compatibility aliases
+val DarkTealBg = CrimsonBackground
+val DarkTealGradientEnd = Color(0xFF0A0607)
+val GlassCardBg = GlassCrimson
+val GlassCardBorder = CrimsonBorder
+val GlassCardHeaderBg = GlassCrimsonHighlight
+val CyanAccent = CrimsonAccent
+val CyanGlow = Color(0x80E53935)
+val MintGaugeProgress = CrimsonGaze
+val MintGaugeTrack = CrimsonGaugeTrack
+val TextPrimaryTeal = CrimsonTextPrimary
+val TextSecondaryTeal = CrimsonTextSecondary
+val TextMutedTeal = CrimsonTextSecondary
+val AmberNoticeBg = GoldGlassBg
+val AmberNoticeBorder = GoldGlassBorder
+val AmberNoticeText = GoldStarColor
 val AppointmentBorderColor = GoldGlassBorder
 val AppointmentBgColor = GoldGlassBg

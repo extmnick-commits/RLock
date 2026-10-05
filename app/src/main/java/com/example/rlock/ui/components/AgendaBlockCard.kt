@@ -27,15 +27,14 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,15 +53,15 @@ import androidx.compose.ui.unit.dp
 import com.example.rlock.model.AgendaBlock
 import com.example.rlock.model.Subtask
 import com.example.rlock.notification.RLockNotificationManager
-import com.example.rlock.ui.theme.CyanAccent
-import com.example.rlock.ui.theme.GlassCardBg
-import com.example.rlock.ui.theme.GlassCardBorder
+import com.example.rlock.ui.theme.CrimsonAccent
+import com.example.rlock.ui.theme.CrimsonBorder
+import com.example.rlock.ui.theme.CrimsonTextPrimary
+import com.example.rlock.ui.theme.CrimsonTextSecondary
+import com.example.rlock.ui.theme.GlassCrimson
+import com.example.rlock.ui.theme.GlassCrimsonHighlight
 import com.example.rlock.ui.theme.GoldGlassBg
 import com.example.rlock.ui.theme.GoldGlassBorder
 import com.example.rlock.ui.theme.GoldStarColor
-import com.example.rlock.ui.theme.TextMutedTeal
-import com.example.rlock.ui.theme.TextPrimaryTeal
-import com.example.rlock.ui.theme.TextSecondaryTeal
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -84,8 +83,8 @@ fun AgendaBlockCard(
         RLockNotificationManager.updateBlockNotification(context, block)
     }
 
-    val cardBg = if (isAppointment) GoldGlassBg else Color(0x331E2E2B)
-    val cardBorder = if (isAppointment) GoldGlassBorder else Color(0x334ECCA3)
+    val cardBg = if (isAppointment) GoldGlassBg else if (block.isDisplaced) GlassCrimsonHighlight else GlassCrimson
+    val cardBorder = if (isAppointment) GoldGlassBorder else CrimsonBorder
 
     Card(
         modifier = modifier
@@ -124,13 +123,13 @@ fun AgendaBlockCard(
                             text = formatTimeRange(block.startTime, block.endTime),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
-                            color = if (isCompleted) TextMutedTeal else TextPrimaryTeal
+                            color = if (isCompleted) CrimsonTextSecondary else CrimsonTextPrimary
                         )
                         Text(
                             text = block.title,
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = if (isAppointment) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isCompleted) TextMutedTeal else TextPrimaryTeal,
+                            color = if (isCompleted) CrimsonTextSecondary else CrimsonTextPrimary,
                             textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None
                         )
                     }
@@ -139,7 +138,7 @@ fun AgendaBlockCard(
                         Text(
                             text = "Shifted from Morning",
                             style = MaterialTheme.typography.labelSmall,
-                            color = TextMutedTeal,
+                            color = CrimsonTextSecondary,
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.padding(top = 2.dp)
                         )
@@ -152,7 +151,7 @@ fun AgendaBlockCard(
                     Text(
                         text = "$completedCount/${block.subtasks.size}",
                         style = MaterialTheme.typography.labelSmall,
-                        color = TextMutedTeal,
+                        color = CrimsonTextSecondary,
                         modifier = Modifier.padding(end = 8.dp)
                     )
                 }
@@ -173,7 +172,7 @@ fun AgendaBlockCard(
                         Icon(
                             imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
                             contentDescription = if (isExpanded) "Collapse" else "Expand",
-                            tint = TextMutedTeal
+                            tint = CrimsonTextSecondary
                         )
                     }
                 }
@@ -206,15 +205,15 @@ fun AgendaBlockCard(
                         OutlinedTextField(
                             value = newTaskName,
                             onValueChange = { newTaskName = it },
-                            placeholder = { Text("Add task...", color = TextMutedTeal) },
+                            placeholder = { Text("Add task...", color = CrimsonTextSecondary) },
                             modifier = Modifier.weight(1f).height(48.dp),
                             singleLine = true,
-                            textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextPrimaryTeal),
+                            textStyle = MaterialTheme.typography.bodyMedium.copy(color = CrimsonTextPrimary),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = CyanAccent,
-                                unfocusedBorderColor = GlassCardBorder,
-                                focusedTextColor = TextPrimaryTeal,
-                                unfocusedTextColor = TextPrimaryTeal
+                                focusedBorderColor = CrimsonAccent,
+                                unfocusedBorderColor = CrimsonBorder,
+                                focusedTextColor = CrimsonTextPrimary,
+                                unfocusedTextColor = CrimsonTextPrimary
                             ),
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = {
@@ -237,7 +236,7 @@ fun AgendaBlockCard(
                             Icon(
                                 imageVector = Icons.Filled.Add,
                                 contentDescription = "Add Task",
-                                tint = CyanAccent
+                                tint = CrimsonAccent
                             )
                         }
                     }
@@ -253,8 +252,8 @@ private fun GlassSquareCheckbox(
     onCheckedChange: () -> Unit,
     isAppointment: Boolean = false
 ) {
-    val borderColor = if (isAppointment) GoldGlassBorder else if (checked) CyanAccent else GlassCardBorder
-    val checkColor = if (isAppointment) GoldStarColor else CyanAccent
+    val borderColor = if (isAppointment) GoldGlassBorder else if (checked) CrimsonAccent else CrimsonBorder
+    val checkColor = if (isAppointment) GoldStarColor else Color.White
 
     Box(
         modifier = Modifier
@@ -295,7 +294,7 @@ private fun SubtaskRow(
         Text(
             text = subtask.name,
             style = MaterialTheme.typography.bodyMedium,
-            color = if (subtask.isCompleted) TextMutedTeal else TextSecondaryTeal,
+            color = if (subtask.isCompleted) CrimsonTextSecondary else CrimsonTextPrimary,
             textDecoration = if (subtask.isCompleted) TextDecoration.LineThrough else TextDecoration.None
         )
     }

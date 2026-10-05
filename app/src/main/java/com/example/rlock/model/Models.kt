@@ -7,12 +7,12 @@ data class CustomCategory(
     val id: String = UUID.randomUUID().toString(),
     val name: String,
     val emoji: String = "📌",
-    val colorHex: Long = 0xFF4ECCA3,
+    val colorHex: Long = 0xFFE53935,
     val isShiftableDefault: Boolean = false
 ) {
     companion object {
-        val GENERAL = CustomCategory(id = "general", name = "General", emoji = "📌", colorHex = 0xFF4ECCA3)
-        val ROUTINE = CustomCategory(id = "routine", name = "Routine", emoji = "🔄", colorHex = 0xFF4ECCA3)
+        val GENERAL = CustomCategory(id = "general", name = "General", emoji = "📌", colorHex = 0xFFE53935)
+        val ROUTINE = CustomCategory(id = "routine", name = "Routine", emoji = "🔄", colorHex = 0xFFE53935)
         val STUDY = CustomCategory(id = "study", name = "Study", emoji = "📚", colorHex = 0xFF3F51B5)
         val PROSPECTING = CustomCategory(id = "prospecting", name = "Prospecting", emoji = "📞", colorHex = 0xFFE91E63)
         val FLEX = CustomCategory(id = "flex", name = "Flex", emoji = "🧘", colorHex = 0xFF9C27B0)
