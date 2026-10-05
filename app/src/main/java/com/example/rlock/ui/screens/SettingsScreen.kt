@@ -362,6 +362,9 @@ private fun TemplateEditDialog(
     var fallbackEndHour by remember { mutableStateOf(template?.fallbackEndTime?.hour?.toString() ?: "22") }
     var fallbackEndMin by remember { mutableStateOf(template?.fallbackEndTime?.minute?.toString() ?: "0") }
 
+    var isNotificationEnabled by remember { mutableStateOf(template?.isNotificationEnabled ?: false) }
+    var subtasksList by remember { mutableStateOf(template?.subtasks?.joinToString(",") { it.name } ?: "") }
+
     var categoryExpanded by remember { mutableStateOf(false) }
 
     AlertDialog(
@@ -492,6 +495,28 @@ private fun TemplateEditDialog(
                         )
                     }
                 }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Sticky Notification Reminder", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold, color = TextPrimaryTeal)
+                        Text("Show ongoing notification when active", style = MaterialTheme.typography.bodySmall, color = TextMutedTeal)
+                    }
+                    Switch(
+                        checked = isNotificationEnabled,
+                        onCheckedChange = { isNotificationEnabled = it },
+                        colors = SwitchDefaults.colors(checkedThumbColor = CyanAccent)
+                    )
+                }
+
+                GlassTextField(
+                    value = subtasksList,
+                    onValueChange = { subtasksList = it },
+                    label = "Subtasks (comma-separated)"
+                )
             }
         },
         confirmButton = {
@@ -525,7 +550,13 @@ private fun TemplateEditDialog(
                         defaultEnd = defEnd,
                         shiftable = shiftable,
                         fallbackStartTime = fbStart,
-                        fallbackEndTime = fbEnd
+                        fallbackEndTime = fbEnd,
+                        isNotificationEnabled = isNotificationEnabled,
+                        subtasks = subtasksList.split(",")
+                            .map { it.trim() }
+                            .filter { it.isNotEmpty() }
+                            .map { com.example.rlock.model.Subtask(name = it) }
+                            .toMutableList()
                     )
                     onSave(newTemplate)
                 },

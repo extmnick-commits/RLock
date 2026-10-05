@@ -1,5 +1,8 @@
 package com.example.rlock.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,30 +17,44 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.example.rlock.model.AgendaBlock
 import com.example.rlock.model.Category
 import com.example.rlock.model.Subtask
+import com.example.rlock.notification.RLockNotificationManager
 import com.example.rlock.ui.theme.CyanAccent
 import com.example.rlock.ui.theme.GlassCardBg
 import com.example.rlock.ui.theme.GlassCardBorder
@@ -55,22 +72,29 @@ fun AgendaBlockCard(
     block: AgendaBlock,
     onToggleCompletion: (String) -> Unit,
     onToggleSubtask: (String, String) -> Unit,
+    onAddSubtask: (String, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val isAppointment = block.category == Category.APPOINTMENT
     val isCompleted = block.isCompleted
-    var isExpanded by remember { mutableStateOf(true) }
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
 
-    val cardBg = if (isAppointment) GoldGlassBg else GlassCardBg
-    val cardBorder = if (isAppointment) GoldGlassBorder else GlassCardBorder
+    val context = LocalContext.current
 
-    Surface(
+    LaunchedEffect(block) {
+        RLockNotificationManager.updateBlockNotification(context, block)
+    }
+
+    val cardBg = if (isAppointment) GoldGlassBg else Color(0x331E2E2B)
+    val cardBorder = if (isAppointment) GoldGlassBorder else Color(0x334ECCA3)
+
+    Card(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .clickable { onToggleCompletion(block.id) },
-        shape = RoundedCornerShape(16.dp),
-        color = cardBg,
+            .clip(RoundedCornerShape(20.dp))
+            .clickable { isExpanded = !isExpanded },
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = cardBg),
         border = BorderStroke(1.dp, cardBorder)
     ) {
         Column(
@@ -123,6 +147,17 @@ fun AgendaBlockCard(
                     }
                 }
 
+                // Fraction indicator
+                if (block.subtasks.isNotEmpty()) {
+                    val completedCount = block.subtasks.count { it.isCompleted }
+                    Text(
+                        text = "$completedCount/${block.subtasks.size}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextMutedTeal,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                }
+
                 // Right End: Gold Star for appointment, or Chevron for subtasks
                 if (isAppointment) {
                     Icon(
@@ -131,7 +166,7 @@ fun AgendaBlockCard(
                         tint = GoldStarColor,
                         modifier = Modifier.size(20.dp)
                     )
-                } else if (block.subtasks.isNotEmpty()) {
+                } else {
                     IconButton(
                         onClick = { isExpanded = !isExpanded },
                         modifier = Modifier.size(24.dp)
@@ -146,10 +181,13 @@ fun AgendaBlockCard(
             }
 
             // Subtasks List
-            if (block.subtasks.isNotEmpty() && isExpanded) {
-                Spacer(modifier = Modifier.height(8.dp))
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
                 Column(
-                    modifier = Modifier.padding(start = 32.dp),
+                    modifier = Modifier.padding(start = 32.dp, top = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     block.subtasks.forEach { subtask ->
@@ -157,6 +195,52 @@ fun AgendaBlockCard(
                             subtask = subtask,
                             onToggle = { onToggleSubtask(block.id, subtask.id) }
                         )
+                    }
+                    
+                    var newTaskName by remember { mutableStateOf("") }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedTextField(
+                            value = newTaskName,
+                            onValueChange = { newTaskName = it },
+                            placeholder = { Text("Add task...", color = TextMutedTeal) },
+                            modifier = Modifier.weight(1f).height(48.dp),
+                            singleLine = true,
+                            textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextPrimaryTeal),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = CyanAccent,
+                                unfocusedBorderColor = GlassCardBorder,
+                                focusedTextColor = TextPrimaryTeal,
+                                unfocusedTextColor = TextPrimaryTeal
+                            ),
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(onDone = {
+                                if (newTaskName.isNotBlank()) {
+                                    onAddSubtask(block.id, newTaskName)
+                                    newTaskName = ""
+                                }
+                            })
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        IconButton(
+                            onClick = {
+                                if (newTaskName.isNotBlank()) {
+                                    onAddSubtask(block.id, newTaskName)
+                                    newTaskName = ""
+                                }
+                            },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Add,
+                                contentDescription = "Add Task",
+                                tint = CyanAccent
+                            )
+                        }
                     }
                 }
             }

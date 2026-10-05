@@ -37,6 +37,7 @@ fun AgendaList(
     blocks: List<AgendaBlock>,
     onToggleCompletion: (String) -> Unit,
     onToggleSubtask: (String, String) -> Unit,
+    onAddSubtask: (String, String) -> Unit,
     onOpenScorecard: () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp)
@@ -88,7 +89,8 @@ fun AgendaList(
                     AgendaBlockCard(
                         block = block,
                         onToggleCompletion = onToggleCompletion,
-                        onToggleSubtask = onToggleSubtask
+                        onToggleSubtask = onToggleSubtask,
+                        onAddSubtask = onAddSubtask
                     )
                 }
             }

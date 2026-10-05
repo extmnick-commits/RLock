@@ -12,6 +12,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Settings
@@ -67,7 +71,8 @@ fun RLockApp(
     val scorecard by viewModel.scorecard.collectAsState()
     val templates by viewModel.templates.collectAsState()
 
-    var selectedTab by remember { mutableIntStateOf(0) } // 0 = Agenda, 1 = Settings
+    val pagerState = rememberPagerState(pageCount = { 2 })
+    val coroutineScope = rememberCoroutineScope()
 
     var showAddAppointmentDialog by remember { mutableStateOf(false) }
     var showQuickAddBlockDialog by remember { mutableStateOf(false) }
@@ -80,7 +85,7 @@ fun RLockApp(
             TopAppBar(
                 title = {
                     Text(
-                        text = if (selectedTab == 0) "RLock • DAILY AGENDA" else "RLock • DEFAULTS & GOALS",
+                        text = if (pagerState.currentPage == 0) "RLock • DAILY AGENDA" else "RLock • DEFAULTS & GOALS",
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleLarge
                     )
@@ -106,8 +111,8 @@ fun RLockApp(
                     tonalElevation = 0.dp
                 ) {
                     NavigationBarItem(
-                        selected = selectedTab == 0,
-                        onClick = { selectedTab = 0 },
+                        selected = pagerState.currentPage == 0,
+                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
                         icon = { Icon(Icons.Default.CalendarToday, contentDescription = "Daily Agenda") },
                         label = {
                             Text(
@@ -125,8 +130,8 @@ fun RLockApp(
                         )
                     )
                     NavigationBarItem(
-                        selected = selectedTab == 1,
-                        onClick = { selectedTab = 1 },
+                        selected = pagerState.currentPage == 1,
+                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
                         icon = { Icon(Icons.Default.Settings, contentDescription = "Defaults & Goals") },
                         label = {
                             Text(
@@ -158,51 +163,59 @@ fun RLockApp(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if (selectedTab == 0) {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    // Sticky Dynamic Scorecard Header
-                    ScorecardHeader(
-                        metrics = scorecard.metrics,
-                        onIncrementMetric = { metricId ->
-                            viewModel.incrementMetric(metricId, 1)
-                        }
-                    )
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                if (page == 0) {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        // Sticky Dynamic Scorecard Header
+                        ScorecardHeader(
+                            metrics = scorecard.metrics,
+                            onIncrementMetric = { metricId ->
+                                viewModel.incrementMetric(metricId, 1)
+                            }
+                        )
 
-                    // Daily Agenda List
-                    AgendaList(
-                        blocks = agendaBlocks,
-                        onToggleCompletion = { blockId ->
-                            viewModel.toggleBlockCompletion(blockId)
+                        // Daily Agenda List
+                        AgendaList(
+                            blocks = agendaBlocks,
+                            onToggleCompletion = { blockId ->
+                                viewModel.toggleBlockCompletion(blockId)
+                            },
+                            onToggleSubtask = { blockId, subtaskId ->
+                                viewModel.toggleSubtaskCompletion(blockId, subtaskId)
+                            },
+                            onAddSubtask = { blockId, subtaskId ->
+                                viewModel.addSubtask(blockId, subtaskId)
+                            },
+                            onOpenScorecard = {
+                                showScorecardBottomSheet = true
+                            }
+                        )
+                    }
+                } else {
+                    // Edit Daily Defaults (Settings Screen)
+                    SettingsScreen(
+                        templates = templates,
+                        metrics = scorecard.metrics,
+                        onSaveTemplate = { template ->
+                            viewModel.saveTemplate(template)
                         },
-                        onToggleSubtask = { blockId, subtaskId ->
-                            viewModel.toggleSubtaskCompletion(blockId, subtaskId)
+                        onDeleteTemplate = { templateId ->
+                            viewModel.deleteTemplate(templateId)
                         },
-                        onOpenScorecard = {
-                            showScorecardBottomSheet = true
+                        onSaveMetric = { metric ->
+                            viewModel.addMetricGoal(metric.name, metric.target)
+                        },
+                        onUpdateMetric = { metricId, name, target ->
+                            viewModel.updateMetricGoal(metricId, name, target)
+                        },
+                        onDeleteMetric = { metricId ->
+                            viewModel.deleteMetricGoal(metricId)
                         }
                     )
                 }
-            } else {
-                // Edit Daily Defaults (Settings Screen)
-                SettingsScreen(
-                    templates = templates,
-                    metrics = scorecard.metrics,
-                    onSaveTemplate = { template ->
-                        viewModel.saveTemplate(template)
-                    },
-                    onDeleteTemplate = { templateId ->
-                        viewModel.deleteTemplate(templateId)
-                    },
-                    onSaveMetric = { metric ->
-                        viewModel.addMetricGoal(metric.name, metric.target)
-                    },
-                    onUpdateMetric = { metricId, name, target ->
-                        viewModel.updateMetricGoal(metricId, name, target)
-                    },
-                    onDeleteMetric = { metricId ->
-                        viewModel.deleteMetricGoal(metricId)
-                    }
-                )
             }
         }
     }

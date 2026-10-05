@@ -34,7 +34,8 @@ data class BlockTemplate(
     val shiftable: Boolean = false,
     val fallbackStartTime: LocalTime? = null,
     val fallbackEndTime: LocalTime? = null,
-    val subtasks: List<Subtask> = emptyList()
+    val subtasks: MutableList<Subtask> = mutableListOf(),
+    val isNotificationEnabled: Boolean = false
 ) {
     init {
         if (shiftable) {
@@ -58,7 +59,8 @@ data class AgendaBlock(
     val shiftable: Boolean = false,
     val fallbackStartTime: LocalTime? = null,
     val fallbackEndTime: LocalTime? = null,
-    val subtasks: List<Subtask> = emptyList()
+    val subtasks: MutableList<Subtask> = mutableListOf(),
+    val isNotificationEnabled: Boolean = false
 )
 
 data class DailyScorecard(

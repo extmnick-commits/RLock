@@ -38,7 +38,7 @@ class InMemoryTemplateRepository : TemplateRepository {
                 category = Category.ROUTINE,
                 defaultStart = LocalTime.of(6, 0),
                 defaultEnd = LocalTime.of(8, 0),
-                subtasks = listOf(
+                subtasks = mutableListOf(
                     Subtask(name = "Clean"),
                     Subtask(name = "Yard work"),
                     Subtask(name = "Property prep")
@@ -60,7 +60,7 @@ class InMemoryTemplateRepository : TemplateRepository {
                 shiftable = true,
                 fallbackStartTime = LocalTime.of(20, 0),
                 fallbackEndTime = LocalTime.of(22, 0),
-                subtasks = listOf(
+                subtasks = mutableListOf(
                     Subtask(name = "Complete study section"),
                     Subtask(name = "QBank/practice questions"),
                     Subtask(name = "Review missed questions")
@@ -72,7 +72,7 @@ class InMemoryTemplateRepository : TemplateRepository {
                 category = Category.PROSPECTING,
                 defaultStart = LocalTime.of(11, 30),
                 defaultEnd = LocalTime.of(16, 0),
-                subtasks = listOf(
+                subtasks = mutableListOf(
                     Subtask(name = "Calls/texts/invites"),
                     Subtask(name = "Follow-ups"),
                     Subtask(name = "Set appointments")
@@ -104,7 +104,8 @@ class InMemoryTemplateRepository : TemplateRepository {
                 shiftable = template.shiftable,
                 fallbackStartTime = template.fallbackStartTime,
                 fallbackEndTime = template.fallbackEndTime,
-                subtasks = template.subtasks
+                subtasks = template.subtasks,
+                isNotificationEnabled = template.isNotificationEnabled
             )
         }.sortedBy { it.startTime }
     }

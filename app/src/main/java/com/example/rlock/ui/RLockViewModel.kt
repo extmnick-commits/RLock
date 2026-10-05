@@ -8,6 +8,7 @@ import com.example.rlock.model.BlockTemplate
 import com.example.rlock.model.Category
 import com.example.rlock.model.DailyScorecard
 import com.example.rlock.model.MetricGoal
+import com.example.rlock.model.Subtask
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -149,7 +150,7 @@ class RLockViewModel(
                     val newCompletionState = !block.isCompleted
                     block.copy(
                         isCompleted = newCompletionState,
-                        subtasks = block.subtasks.map { it.copy(isCompleted = newCompletionState) }
+                        subtasks = block.subtasks.map { it.copy(isCompleted = newCompletionState) }.toMutableList()
                     )
                 } else {
                     block
@@ -166,7 +167,7 @@ class RLockViewModel(
                         if (it.id == subtaskId) it.copy(isCompleted = !it.isCompleted) else it
                     }
                     val allCompleted = newSubtasks.isNotEmpty() && newSubtasks.all { it.isCompleted }
-                    block.copy(subtasks = newSubtasks, isCompleted = allCompleted)
+                    block.copy(subtasks = newSubtasks.toMutableList(), isCompleted = allCompleted)
                 } else {
                     block
                 }
@@ -207,6 +208,19 @@ class RLockViewModel(
         _metrics.update { current -> current.filter { it.id != metricId } }
     }
 
+    fun addSubtask(blockId: String, subtaskName: String) {
+        _agendaBlocks.update { currentBlocks ->
+            currentBlocks.map { block ->
+                if (block.id == blockId) {
+                    val newSubtasks = block.subtasks + Subtask(name = subtaskName)
+                    block.copy(subtasks = newSubtasks.toMutableList(), isCompleted = false)
+                } else {
+                    block
+                }
+            }
+        }
+    }
+
     fun saveTemplate(template: BlockTemplate) {
         viewModelScope.launch {
             val currentTemplates = templates.value
@@ -214,6 +228,27 @@ class RLockViewModel(
                 repository.updateTemplate(template)
             } else {
                 repository.addTemplate(template)
+            }
+            // Update today's agenda immediately
+            _agendaBlocks.update { blocks ->
+                val existingBlock = blocks.find { it.templateId == template.id }
+                if (existingBlock != null) {
+                    blocks.map { if (it.templateId == template.id) it.copy(title = template.title, category = template.category, startTime = template.defaultStart, endTime = template.defaultEnd, shiftable = template.shiftable, fallbackStartTime = template.fallbackStartTime, fallbackEndTime = template.fallbackEndTime, subtasks = template.subtasks, isNotificationEnabled = template.isNotificationEnabled) else it }
+                } else {
+                    val newBlock = AgendaBlock(
+                        templateId = template.id,
+                        title = template.title,
+                        category = template.category,
+                        startTime = template.defaultStart,
+                        endTime = template.defaultEnd,
+                        shiftable = template.shiftable,
+                        fallbackStartTime = template.fallbackStartTime,
+                        fallbackEndTime = template.fallbackEndTime,
+                        subtasks = template.subtasks,
+                        isNotificationEnabled = template.isNotificationEnabled
+                    )
+                    (blocks + newBlock).sortedBy { it.startTime }
+                }
             }
         }
     }
