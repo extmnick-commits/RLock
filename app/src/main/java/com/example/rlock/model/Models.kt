@@ -3,12 +3,23 @@ package com.example.rlock.model
 import java.time.LocalTime
 import java.util.UUID
 
-enum class Category {
-    ROUTINE,
-    STUDY,
-    PROSPECTING,
-    FLEX,
-    APPOINTMENT
+data class CustomCategory(
+    val id: String = UUID.randomUUID().toString(),
+    val name: String,
+    val emoji: String = "📌",
+    val colorHex: Long = 0xFF4ECCA3,
+    val isShiftableDefault: Boolean = false
+) {
+    companion object {
+        val GENERAL = CustomCategory(id = "general", name = "General", emoji = "📌", colorHex = 0xFF4ECCA3)
+        val ROUTINE = CustomCategory(id = "routine", name = "Routine", emoji = "🔄", colorHex = 0xFF4ECCA3)
+        val STUDY = CustomCategory(id = "study", name = "Study", emoji = "📚", colorHex = 0xFF3F51B5)
+        val PROSPECTING = CustomCategory(id = "prospecting", name = "Prospecting", emoji = "📞", colorHex = 0xFFE91E63)
+        val FLEX = CustomCategory(id = "flex", name = "Flex", emoji = "🧘", colorHex = 0xFF9C27B0)
+        val APPOINTMENT = CustomCategory(id = "appointment", name = "Appointment", emoji = "📅", colorHex = 0xFFFFC107)
+
+        val defaultCategories = listOf(GENERAL, ROUTINE, STUDY, PROSPECTING, FLEX, APPOINTMENT)
+    }
 }
 
 data class Subtask(
@@ -27,7 +38,8 @@ data class MetricGoal(
 data class BlockTemplate(
     val id: String = UUID.randomUUID().toString(),
     val title: String,
-    val category: Category,
+    val categoryId: String,
+    val categoryName: String,
     val section: String = "",
     val defaultStart: LocalTime,
     val defaultEnd: LocalTime,
@@ -51,7 +63,8 @@ data class AgendaBlock(
     val templateId: String? = null, // null for dynamic appointments
     val title: String,
     val section: String = "",
-    val category: Category,
+    val categoryId: String,
+    val categoryName: String,
     val startTime: LocalTime,
     val endTime: LocalTime,
     val isDisplaced: Boolean = false,

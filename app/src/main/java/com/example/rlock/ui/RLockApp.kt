@@ -48,10 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.example.rlock.ui.components.AgendaList
-import com.example.rlock.ui.components.RLockSpeedDialFab
 import com.example.rlock.ui.components.ScorecardHeader
-import com.example.rlock.ui.dialogs.AddAppointmentDialog
-import com.example.rlock.ui.dialogs.AddQuickBlockDialog
 import com.example.rlock.ui.screens.SettingsScreen
 import com.example.rlock.ui.theme.CyanAccent
 import com.example.rlock.ui.theme.DarkTealBg
@@ -74,8 +71,6 @@ fun RLockApp(
     val pagerState = rememberPagerState(pageCount = { 2 })
     val coroutineScope = rememberCoroutineScope()
 
-    var showAddAppointmentDialog by remember { mutableStateOf(false) }
-    var showQuickAddBlockDialog by remember { mutableStateOf(false) }
     var showScorecardBottomSheet by remember { mutableStateOf(false) }
     var showSettingsScreen by remember { mutableStateOf(false) }
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -160,12 +155,7 @@ fun RLockApp(
                 }
             }
         },
-        floatingActionButton = {
-            RLockSpeedDialFab(
-                onAddAppointmentClick = { showAddAppointmentDialog = true },
-                onQuickAddBlockClick = { showQuickAddBlockDialog = true }
-            )
-        }
+
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -211,34 +201,7 @@ fun RLockApp(
         }
     }
 
-    // Floating Action Dialogs
-    if (showAddAppointmentDialog) {
-        AddAppointmentDialog(
-            onDismiss = { showAddAppointmentDialog = false },
-            onConfirm = { title, start, end ->
-                viewModel.addAppointment(title, start, end)
-                showAddAppointmentDialog = false
-            }
-        )
-    }
 
-    if (showQuickAddBlockDialog) {
-        AddQuickBlockDialog(
-            onDismiss = { showQuickAddBlockDialog = false },
-            onConfirm = { title, category, start, end, shiftable, fbStart, fbEnd ->
-                viewModel.addQuickBlock(
-                    title = title,
-                    category = category,
-                    start = start,
-                    end = end,
-                    shiftable = shiftable,
-                    fallbackStart = fbStart,
-                    fallbackEnd = fbEnd
-                )
-                showQuickAddBlockDialog = false
-            }
-        )
-    }
 
     if (showScorecardBottomSheet) {
         ModalBottomSheet(
@@ -266,23 +229,7 @@ fun RLockApp(
                 color = DarkTealBg
             ) {
                 SettingsScreen(
-                    templates = templates,
-                    metrics = scorecard.metrics,
-                    onSaveTemplate = { template ->
-                        viewModel.saveTemplate(template)
-                    },
-                    onDeleteTemplate = { templateId ->
-                        viewModel.deleteTemplate(templateId)
-                    },
-                    onSaveMetric = { metric ->
-                        viewModel.addMetricGoal(metric.name, metric.target)
-                    },
-                    onUpdateMetric = { metricId, name, target ->
-                        viewModel.updateMetricGoal(metricId, name, target)
-                    },
-                    onDeleteMetric = { metricId ->
-                        viewModel.deleteMetricGoal(metricId)
-                    },
+                    viewModel = viewModel,
                     onDismiss = { showSettingsScreen = false }
                 )
             }
@@ -330,7 +277,7 @@ fun ScorecardBottomSheetContent(
             isCompleted = maintenanceCompleted
         )
 
-        val appointments = agendaBlocks.filter { it.category == com.example.rlock.model.Category.APPOINTMENT }
+        val appointments = agendaBlocks.filter { it.categoryId == "appointment" }
         val allApptsCompleted = appointments.isNotEmpty() && appointments.all { it.isCompleted }
         ScorecardChecklistRow(
             text = "All scheduled appointments completed",

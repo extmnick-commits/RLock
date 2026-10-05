@@ -52,7 +52,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.example.rlock.model.AgendaBlock
-import com.example.rlock.model.Category
 import com.example.rlock.model.Subtask
 import com.example.rlock.notification.RLockNotificationManager
 import com.example.rlock.ui.theme.CyanAccent
@@ -75,7 +74,7 @@ fun AgendaBlockCard(
     onAddSubtask: (String, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isAppointment = block.category == Category.APPOINTMENT
+    val isAppointment = block.categoryId == "appointment"
     val isCompleted = block.isCompleted
     var isExpanded by rememberSaveable { mutableStateOf(false) }
 

@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.rlock.data.TemplateRepository
 import com.example.rlock.model.AgendaBlock
 import com.example.rlock.model.BlockTemplate
-import com.example.rlock.model.Category
+import com.example.rlock.model.CustomCategory
 import com.example.rlock.model.DailyScorecard
 import com.example.rlock.model.MetricGoal
 import com.example.rlock.model.SideQuest
@@ -51,10 +51,123 @@ class RLockViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+        
+    val categories: StateFlow<List<CustomCategory>> = repository.getCategories()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = CustomCategory.defaultCategories
+        )
 
     init {
         // Initialize today's agenda based on default templates
         _agendaBlocks.value = repository.generateTodayAgenda()
+    }
+
+    fun addCategory(name: String, emoji: String, colorHex: Long) {
+        repository.addCategory(CustomCategory(name = name, emoji = emoji, colorHex = colorHex))
+    }
+
+    fun updateCategory(category: CustomCategory) {
+        repository.updateCategory(category)
+        
+        // Also update any existing blocks for today with the new category name
+        _agendaBlocks.update { currentBlocks ->
+            currentBlocks.map { block ->
+                if (block.categoryId == category.id) {
+                    block.copy(categoryName = category.name)
+                } else {
+                    block
+                }
+            }
+        }
+    }
+
+    fun deleteCategory(categoryId: String) {
+        repository.deleteCategory(categoryId)
+        // Also update any existing blocks for today to GENERAL
+        _agendaBlocks.update { currentBlocks ->
+            currentBlocks.map { block ->
+                if (block.categoryId == categoryId) {
+                    block.copy(categoryId = CustomCategory.GENERAL.id, categoryName = CustomCategory.GENERAL.name)
+                } else {
+                    block
+                }
+            }
+        }
+    }
+
+    fun addTemplateBlock(template: BlockTemplate) {
+        repository.addTemplate(template)
+        addAgendaBlockForTemplate(template)
+    }
+
+    fun updateTemplateBlock(template: BlockTemplate) {
+        repository.updateTemplate(template)
+        // Update today's agenda block if it exists
+        _agendaBlocks.update { blocks ->
+            blocks.map { 
+                if (it.templateId == template.id) {
+                    it.copy(
+                        title = template.title,
+                        categoryId = template.categoryId,
+                        categoryName = template.categoryName,
+                        startTime = template.defaultStart,
+                        endTime = template.defaultEnd,
+                        shiftable = template.shiftable,
+                        fallbackStartTime = template.fallbackStartTime,
+                        fallbackEndTime = template.fallbackEndTime,
+                        subtasks = template.subtasks.map { subtask ->
+                            it.subtasks.find { existing -> existing.id == subtask.id }?.copy(name = subtask.name) 
+                                ?: subtask.copy(id = UUID.randomUUID().toString())
+                        }.toMutableList(),
+                        isNotificationEnabled = template.isNotificationEnabled
+                    )
+                } else {
+                    it
+                }
+            }
+        }
+    }
+
+    fun deleteTemplateBlock(templateId: String) {
+        repository.deleteTemplate(templateId)
+        // Remove from today's agenda
+        _agendaBlocks.update { currentBlocks ->
+            currentBlocks.filter { it.templateId != templateId }
+        }
+    }
+
+    fun saveTemplate(template: BlockTemplate) {
+        val currentTemplates = templates.value
+        if (currentTemplates.any { it.id == template.id }) {
+            updateTemplateBlock(template)
+        } else {
+            addTemplateBlock(template)
+        }
+    }
+
+    fun deleteTemplate(templateId: String) {
+        deleteTemplateBlock(templateId)
+    }
+
+    private fun addAgendaBlockForTemplate(template: BlockTemplate) {
+        _agendaBlocks.update { blocks ->
+            val newBlock = AgendaBlock(
+                templateId = template.id,
+                title = template.title,
+                categoryId = template.categoryId,
+                categoryName = template.categoryName,
+                startTime = template.defaultStart,
+                endTime = template.defaultEnd,
+                shiftable = template.shiftable,
+                fallbackStartTime = template.fallbackStartTime,
+                fallbackEndTime = template.fallbackEndTime,
+                subtasks = template.subtasks.map { it.copy(id = UUID.randomUUID().toString(), isCompleted = false) }.toMutableList(),
+                isNotificationEnabled = template.isNotificationEnabled
+            )
+            (blocks + newBlock).sortedBy { it.startTime }
+        }
     }
 
     /**
@@ -65,7 +178,8 @@ class RLockViewModel(
         val newAppointment = AgendaBlock(
             title = title,
             section = "📅 Appointments & Prospecting",
-            category = Category.APPOINTMENT,
+            categoryId = CustomCategory.APPOINTMENT.id,
+            categoryName = CustomCategory.APPOINTMENT.name,
             startTime = start,
             endTime = end,
         )
@@ -75,7 +189,7 @@ class RLockViewModel(
             updatedBlocks.add(newAppointment)
 
             for (block in currentBlocks) {
-                if (block.category == Category.APPOINTMENT) {
+                if (block.categoryId == CustomCategory.APPOINTMENT.id) {
                     updatedBlocks.add(block)
                     continue
                 }
@@ -126,7 +240,7 @@ class RLockViewModel(
 
     fun addQuickBlock(
         title: String,
-        category: Category,
+        category: CustomCategory,
         start: LocalTime,
         end: LocalTime,
         shiftable: Boolean = false,
@@ -135,7 +249,8 @@ class RLockViewModel(
     ) {
         val newBlock = AgendaBlock(
             title = title,
-            category = category,
+            categoryId = category.id,
+            categoryName = category.name,
             startTime = start,
             endTime = end,
             shiftable = shiftable,
@@ -145,6 +260,10 @@ class RLockViewModel(
         _agendaBlocks.update { current ->
             (current + newBlock).sortedBy { it.startTime }
         }
+    }
+
+    fun resetTodayToDefaults() {
+        _agendaBlocks.value = repository.generateTodayAgenda()
     }
 
     fun toggleBlockCompletion(blockId: String) {
@@ -222,44 +341,6 @@ class RLockViewModel(
                     block
                 }
             }
-        }
-    }
-
-    fun saveTemplate(template: BlockTemplate) {
-        viewModelScope.launch {
-            val currentTemplates = templates.value
-            if (currentTemplates.any { it.id == template.id }) {
-                repository.updateTemplate(template)
-            } else {
-                repository.addTemplate(template)
-            }
-            // Update today's agenda immediately
-            _agendaBlocks.update { blocks ->
-                val existingBlock = blocks.find { it.templateId == template.id }
-                if (existingBlock != null) {
-                    blocks.map { if (it.templateId == template.id) it.copy(title = template.title, category = template.category, startTime = template.defaultStart, endTime = template.defaultEnd, shiftable = template.shiftable, fallbackStartTime = template.fallbackStartTime, fallbackEndTime = template.fallbackEndTime, subtasks = template.subtasks, isNotificationEnabled = template.isNotificationEnabled) else it }
-                } else {
-                    val newBlock = AgendaBlock(
-                        templateId = template.id,
-                        title = template.title,
-                        category = template.category,
-                        startTime = template.defaultStart,
-                        endTime = template.defaultEnd,
-                        shiftable = template.shiftable,
-                        fallbackStartTime = template.fallbackStartTime,
-                        fallbackEndTime = template.fallbackEndTime,
-                        subtasks = template.subtasks,
-                        isNotificationEnabled = template.isNotificationEnabled
-                    )
-                    (blocks + newBlock).sortedBy { it.startTime }
-                }
-            }
-        }
-    }
-
-    fun deleteTemplate(templateId: String) {
-        viewModelScope.launch {
-            repository.deleteTemplate(templateId)
         }
     }
 

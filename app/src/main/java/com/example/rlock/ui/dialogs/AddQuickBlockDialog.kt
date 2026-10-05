@@ -28,7 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.rlock.model.Category
+import com.example.rlock.model.CustomCategory
 import com.example.rlock.ui.theme.CyanAccent
 import com.example.rlock.ui.theme.GlassCardBg
 import com.example.rlock.ui.theme.GlassCardBorder
@@ -44,7 +44,7 @@ fun AddQuickBlockDialog(
     onDismiss: () -> Unit,
     onConfirm: (
         title: String,
-        category: Category,
+        category: CustomCategory,
         start: LocalTime,
         end: LocalTime,
         shiftable: Boolean,
@@ -53,7 +53,7 @@ fun AddQuickBlockDialog(
     ) -> Unit
 ) {
     var title by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf(Category.ROUTINE) }
+    var category by remember { mutableStateOf(CustomCategory.ROUTINE) }
     var startHour by remember { mutableStateOf("14") }
     var startMin by remember { mutableStateOf("0") }
     var endHour by remember { mutableStateOf("15") }
@@ -120,7 +120,7 @@ fun AddQuickBlockDialog(
                         expanded = categoryExpanded,
                         onDismissRequest = { categoryExpanded = false }
                     ) {
-                        Category.entries.filter { it != Category.APPOINTMENT }.forEach { cat ->
+                        CustomCategory.defaultCategories.filter { it.id != "appointment" }.forEach { cat ->
                             DropdownMenuItem(
                                 text = { Text(cat.name, color = TextPrimaryTeal) },
                                 onClick = {
