@@ -4,11 +4,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -18,8 +19,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.rlock.ui.theme.CyanAccent
+import com.example.rlock.ui.theme.GlassCardBg
+import com.example.rlock.ui.theme.GlassCardBorder
+import com.example.rlock.ui.theme.GlassDialogBg
+import com.example.rlock.ui.theme.TextMutedTeal
+import com.example.rlock.ui.theme.TextPrimaryTeal
+import com.example.rlock.ui.theme.TextSecondaryTeal
 import java.time.LocalTime
 
 @Composable
@@ -34,6 +41,9 @@ fun AddAppointmentDialog(
     var endMin by remember { mutableStateOf("0") }
 
     AlertDialog(
+        containerColor = GlassDialogBg,
+        titleContentColor = TextPrimaryTeal,
+        textContentColor = TextSecondaryTeal,
         onDismissRequest = onDismiss,
         title = { Text("Add Appointment (Triggers Shift Engine)") },
         text = {
@@ -41,49 +51,75 @@ fun AddAppointmentDialog(
                 Text(
                     text = "Inserting an appointment will automatically shift or resize overlapping default blocks.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = TextMutedTeal
                 )
 
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Appointment Title") },
+                    label = { Text("Appointment Title", color = TextMutedTeal) },
                     singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = CyanAccent,
+                        unfocusedBorderColor = GlassCardBorder,
+                        focusedTextColor = TextPrimaryTeal,
+                        unfocusedTextColor = TextPrimaryTeal
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Text("Start Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+                Text("Start Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = TextPrimaryTeal)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = startHour,
                         onValueChange = { startHour = it },
-                        label = { Text("Hour (0-23)") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        label = { Text("Hour (0-23)", color = TextMutedTeal) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = CyanAccent,
+                            unfocusedBorderColor = GlassCardBorder,
+                            focusedTextColor = TextPrimaryTeal,
+                            unfocusedTextColor = TextPrimaryTeal
+                        ),
                         modifier = Modifier.weight(1f)
                     )
                     OutlinedTextField(
                         value = startMin,
                         onValueChange = { startMin = it },
-                        label = { Text("Minute (0-59)") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        label = { Text("Minute (0-59)", color = TextMutedTeal) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = CyanAccent,
+                            unfocusedBorderColor = GlassCardBorder,
+                            focusedTextColor = TextPrimaryTeal,
+                            unfocusedTextColor = TextPrimaryTeal
+                        ),
                         modifier = Modifier.weight(1f)
                     )
                 }
 
-                Text("End Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+                Text("End Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = TextPrimaryTeal)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = endHour,
                         onValueChange = { endHour = it },
-                        label = { Text("Hour (0-23)") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        label = { Text("Hour (0-23)", color = TextMutedTeal) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = CyanAccent,
+                            unfocusedBorderColor = GlassCardBorder,
+                            focusedTextColor = TextPrimaryTeal,
+                            unfocusedTextColor = TextPrimaryTeal
+                        ),
                         modifier = Modifier.weight(1f)
                     )
                     OutlinedTextField(
                         value = endMin,
                         onValueChange = { endMin = it },
-                        label = { Text("Minute (0-59)") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        label = { Text("Minute (0-59)", color = TextMutedTeal) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = CyanAccent,
+                            unfocusedBorderColor = GlassCardBorder,
+                            focusedTextColor = TextPrimaryTeal,
+                            unfocusedTextColor = TextPrimaryTeal
+                        ),
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -105,14 +141,15 @@ fun AddAppointmentDialog(
                         startTime,
                         endTime
                     )
-                }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = CyanAccent)
             ) {
-                Text("Insert Appointment")
+                Text("Insert Appointment", color = GlassCardBg, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text("Cancel", color = TextMutedTeal)
             }
         }
     )

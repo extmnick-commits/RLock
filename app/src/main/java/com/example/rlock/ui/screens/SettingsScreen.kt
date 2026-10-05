@@ -1,5 +1,6 @@
 package com.example.rlock.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,15 +14,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -32,8 +31,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -49,6 +50,14 @@ import androidx.compose.ui.unit.dp
 import com.example.rlock.model.BlockTemplate
 import com.example.rlock.model.Category
 import com.example.rlock.model.MetricGoal
+import com.example.rlock.ui.theme.CyanAccent
+import com.example.rlock.ui.theme.GlassCardBg
+import com.example.rlock.ui.theme.GlassCardBorder
+import com.example.rlock.ui.theme.GlassCardHeaderBg
+import com.example.rlock.ui.theme.GlassDialogBg
+import com.example.rlock.ui.theme.TextMutedTeal
+import com.example.rlock.ui.theme.TextPrimaryTeal
+import com.example.rlock.ui.theme.TextSecondaryTeal
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -73,8 +82,8 @@ fun SettingsScreen(
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(
-            top = contentPadding.calculateTopPadding() + 16.dp,
-            bottom = contentPadding.calculateBottomPadding() + 24.dp,
+            top = contentPadding.calculateTopPadding() + 12.dp,
+            bottom = contentPadding.calculateBottomPadding() + 90.dp,
             start = 16.dp,
             end = 16.dp
         ),
@@ -91,22 +100,24 @@ fun SettingsScreen(
                     Text(
                         text = "Edit Scorecard Goals",
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimaryTeal
                     )
                     Text(
                         text = "Customize metric names and targets",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = TextMutedTeal
                     )
                 }
 
                 OutlinedButton(
                     onClick = { showAddMetricDialog = true },
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CyanAccent)
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add Goal")
+                    Icon(Icons.Default.Add, contentDescription = "Add Goal", tint = CyanAccent)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Add Goal")
+                    Text("Add Goal", color = CyanAccent, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -131,22 +142,30 @@ fun SettingsScreen(
                     Text(
                         text = "Edit Daily Block Defaults",
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimaryTeal
                     )
                     Text(
                         text = "Configure templates and shift fallback slots",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = TextMutedTeal
                     )
                 }
 
-                Button(
+                Surface(
                     onClick = { showAddTemplateDialog = true },
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    color = GlassCardBg,
+                    border = BorderStroke(1.dp, CyanAccent)
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add Block")
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Add Block")
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = "Add Block", tint = CyanAccent)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Add Block", color = CyanAccent, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }
@@ -202,10 +221,11 @@ private fun MetricGoalSettingCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
-    Card(
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        shape = RoundedCornerShape(16.dp),
+        color = GlassCardBg,
+        border = BorderStroke(1.dp, GlassCardBorder)
     ) {
         Row(
             modifier = Modifier
@@ -218,18 +238,19 @@ private fun MetricGoalSettingCard(
                 Text(
                     text = metric.name,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimaryTeal
                 )
                 Text(
                     text = "Target: ${metric.target}",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    color = CyanAccent
                 )
             }
 
             Row {
                 IconButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit Goal", tint = MaterialTheme.colorScheme.primary)
+                    Icon(Icons.Default.Edit, contentDescription = "Edit Goal", tint = CyanAccent)
                 }
                 IconButton(onClick = onDelete) {
                     Icon(Icons.Default.Delete, contentDescription = "Delete Goal", tint = MaterialTheme.colorScheme.error)
@@ -245,10 +266,11 @@ private fun TemplateSettingCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
-    Card(
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        shape = RoundedCornerShape(16.dp),
+        color = GlassCardBg,
+        border = BorderStroke(1.dp, GlassCardBorder)
     ) {
         Column(
             modifier = Modifier
@@ -262,28 +284,30 @@ private fun TemplateSettingCard(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer
+                        shape = RoundedCornerShape(10.dp),
+                        color = GlassCardHeaderBg,
+                        border = BorderStroke(1.dp, GlassCardBorder)
                     ) {
                         Text(
                             text = template.category.name,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                            color = CyanAccent
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = template.title,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimaryTeal
                     )
                 }
 
                 Row {
                     IconButton(onClick = onEdit) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit Template", tint = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.Default.Edit, contentDescription = "Edit Template", tint = CyanAccent)
                     }
                     IconButton(onClick = onDelete) {
                         Icon(Icons.Default.Delete, contentDescription = "Delete Template", tint = MaterialTheme.colorScheme.error)
@@ -295,20 +319,21 @@ private fun TemplateSettingCard(
             Text(
                 text = "Default Time: ${formatTime(template.defaultStart)} - ${formatTime(template.defaultEnd)}",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = TextSecondaryTeal
             )
 
             if (template.shiftable && template.fallbackStartTime != null && template.fallbackEndTime != null) {
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 Surface(
                     shape = RoundedCornerShape(6.dp),
-                    color = MaterialTheme.colorScheme.secondaryContainer
+                    color = GlassCardHeaderBg,
+                    border = BorderStroke(1.dp, CyanAccent.copy(alpha = 0.4f))
                 ) {
                     Text(
                         text = "Shiftable Fallback: ${formatTime(template.fallbackStartTime)} - ${formatTime(template.fallbackEndTime)}",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        color = TextMutedTeal,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
@@ -340,16 +365,17 @@ private fun TemplateEditDialog(
     var categoryExpanded by remember { mutableStateOf(false) }
 
     AlertDialog(
+        containerColor = GlassDialogBg,
+        titleContentColor = TextPrimaryTeal,
+        textContentColor = TextSecondaryTeal,
         onDismissRequest = onDismiss,
         title = { Text(if (template == null) "Add Block Template" else "Edit Block Template") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
+                GlassTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Title") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    label = "Title"
                 )
 
                 // Category Dropdown
@@ -361,8 +387,14 @@ private fun TemplateEditDialog(
                         value = category.name,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Category") },
+                        label = { Text("Category", color = TextMutedTeal) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = CyanAccent,
+                            unfocusedBorderColor = GlassCardBorder,
+                            focusedTextColor = TextPrimaryTeal,
+                            unfocusedTextColor = TextPrimaryTeal
+                        ),
                         modifier = Modifier
                             .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                             .fillMaxWidth()
@@ -373,7 +405,7 @@ private fun TemplateEditDialog(
                     ) {
                         Category.entries.forEach { cat ->
                             DropdownMenuItem(
-                                text = { Text(cat.name) },
+                                text = { Text(cat.name, color = TextPrimaryTeal) },
                                 onClick = {
                                     category = cat
                                     categoryExpanded = false
@@ -383,85 +415,79 @@ private fun TemplateEditDialog(
                     }
                 }
 
-                // Default Start/End Time Inputs
-                Text("Default Schedule Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+                Text("Default Schedule Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = TextPrimaryTeal)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
+                    GlassTextField(
                         value = startHour,
                         onValueChange = { startHour = it },
-                        label = { Text("Start Hr") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        label = "Start Hr",
                         modifier = Modifier.weight(1f)
                     )
-                    OutlinedTextField(
+                    GlassTextField(
                         value = startMin,
                         onValueChange = { startMin = it },
-                        label = { Text("Min") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        label = "Min",
                         modifier = Modifier.weight(1f)
                     )
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
+                    GlassTextField(
                         value = endHour,
                         onValueChange = { endHour = it },
-                        label = { Text("End Hr") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        label = "End Hr",
                         modifier = Modifier.weight(1f)
                     )
-                    OutlinedTextField(
+                    GlassTextField(
                         value = endMin,
                         onValueChange = { endMin = it },
-                        label = { Text("Min") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        label = "Min",
                         modifier = Modifier.weight(1f)
                     )
                 }
 
-                // Shiftable Toggle
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Shiftable", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-                        Text("Move to fallback slot if appointment collides", style = MaterialTheme.typography.bodySmall)
+                        Text("Shiftable", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold, color = TextPrimaryTeal)
+                        Text("Move to fallback slot if appointment collides", style = MaterialTheme.typography.bodySmall, color = TextMutedTeal)
                     }
-                    Switch(checked = shiftable, onCheckedChange = { shiftable = it })
+                    Switch(
+                        checked = shiftable,
+                        onCheckedChange = { shiftable = it },
+                        colors = SwitchDefaults.colors(checkedThumbColor = CyanAccent)
+                    )
                 }
 
                 if (shiftable) {
-                    Text("Fallback Slot Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+                    Text("Fallback Slot Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = TextPrimaryTeal)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedTextField(
+                        GlassTextField(
                             value = fallbackStartHour,
                             onValueChange = { fallbackStartHour = it },
-                            label = { Text("Start Hr") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            label = "Start Hr",
                             modifier = Modifier.weight(1f)
                         )
-                        OutlinedTextField(
+                        GlassTextField(
                             value = fallbackStartMin,
                             onValueChange = { fallbackStartMin = it },
-                            label = { Text("Min") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            label = "Min",
                             modifier = Modifier.weight(1f)
                         )
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedTextField(
+                        GlassTextField(
                             value = fallbackEndHour,
                             onValueChange = { fallbackEndHour = it },
-                            label = { Text("End Hr") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            label = "End Hr",
                             modifier = Modifier.weight(1f)
                         )
-                        OutlinedTextField(
+                        GlassTextField(
                             value = fallbackEndMin,
                             onValueChange = { fallbackEndMin = it },
-                            label = { Text("Min") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            label = "Min",
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -502,14 +528,15 @@ private fun TemplateEditDialog(
                         fallbackEndTime = fbEnd
                     )
                     onSave(newTemplate)
-                }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = CyanAccent)
             ) {
-                Text("Save")
+                Text("Save", color = GlassCardBg, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text("Cancel", color = TextMutedTeal)
             }
         }
     )
@@ -525,24 +552,22 @@ private fun MetricEditDialog(
     var target by remember { mutableStateOf(metric?.target?.toString() ?: "25") }
 
     AlertDialog(
+        containerColor = GlassDialogBg,
+        titleContentColor = TextPrimaryTeal,
+        textContentColor = TextSecondaryTeal,
         onDismissRequest = onDismiss,
         title = { Text(if (metric == null) "Add Scorecard Goal" else "Edit Scorecard Goal") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
+                GlassTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Metric Name (e.g., Calls)") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    label = "Metric Name (e.g., Calls)"
                 )
-                OutlinedTextField(
+                GlassTextField(
                     value = target,
                     onValueChange = { target = it },
-                    label = { Text("Target Count (e.g., 25)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    label = "Target Count (e.g., 25)"
                 )
             }
         },
@@ -551,16 +576,39 @@ private fun MetricEditDialog(
                 onClick = {
                     val targetInt = target.toIntOrNull()?.coerceAtLeast(1) ?: 10
                     onSave(name.ifBlank { "Goal" }, targetInt)
-                }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = CyanAccent)
             ) {
-                Text("Save")
+                Text("Save", color = GlassCardBg, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text("Cancel", color = TextMutedTeal)
             }
         }
+    )
+}
+
+@Composable
+fun GlassTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier.fillMaxWidth()
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label, color = TextMutedTeal) },
+        singleLine = true,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = CyanAccent,
+            unfocusedBorderColor = GlassCardBorder,
+            focusedTextColor = TextPrimaryTeal,
+            unfocusedTextColor = TextPrimaryTeal
+        ),
+        modifier = modifier
     )
 }
 

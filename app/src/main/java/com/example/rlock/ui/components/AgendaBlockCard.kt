@@ -1,8 +1,10 @@
 package com.example.rlock.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,29 +15,38 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Event
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.outlined.Circle
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.example.rlock.model.AgendaBlock
 import com.example.rlock.model.Category
 import com.example.rlock.model.Subtask
-import com.example.rlock.ui.theme.AmberNoticeBg
-import com.example.rlock.ui.theme.AmberNoticeText
-import com.example.rlock.ui.theme.AppointmentBorderColor
+import com.example.rlock.ui.theme.CyanAccent
+import com.example.rlock.ui.theme.GlassCardBg
+import com.example.rlock.ui.theme.GlassCardBorder
+import com.example.rlock.ui.theme.GoldGlassBg
+import com.example.rlock.ui.theme.GoldGlassBorder
+import com.example.rlock.ui.theme.GoldStarColor
+import com.example.rlock.ui.theme.TextMutedTeal
+import com.example.rlock.ui.theme.TextPrimaryTeal
+import com.example.rlock.ui.theme.TextSecondaryTeal
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -48,83 +59,99 @@ fun AgendaBlockCard(
 ) {
     val isAppointment = block.category == Category.APPOINTMENT
     val isCompleted = block.isCompleted
+    var isExpanded by remember { mutableStateOf(true) }
 
-    val cardAlpha = if (isCompleted) 0.65f else 1f
+    val cardBg = if (isAppointment) GoldGlassBg else GlassCardBg
+    val cardBorder = if (isAppointment) GoldGlassBorder else GlassCardBorder
 
-    ElevatedCard(
+    Surface(
         modifier = modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
             .clickable { onToggleCompletion(block.id) },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = if (isAppointment) {
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-            } else if (isCompleted) {
-                MaterialTheme.colorScheme.surfaceContainerLow
-            } else {
-                MaterialTheme.colorScheme.surfaceContainer
-            }
-        ),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = if (isAppointment) 6.dp else 2.dp)
+        color = cardBg,
+        border = BorderStroke(1.dp, cardBorder)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(horizontal = 14.dp, vertical = 12.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Category Chip & Time
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    CategoryBadge(category = block.category)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "${formatTime(block.startTime)} - ${formatTime(block.endTime)}",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = cardAlpha)
-                    )
+                // Square Checkbox
+                GlassSquareCheckbox(
+                    checked = isCompleted,
+                    onCheckedChange = { onToggleCompletion(block.id) },
+                    isAppointment = isAppointment
+                )
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                // Title and Time
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = formatTimeRange(block.startTime, block.endTime),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isCompleted) TextMutedTeal else TextPrimaryTeal
+                        )
+                        Text(
+                            text = block.title,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = if (isAppointment) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isCompleted) TextMutedTeal else TextPrimaryTeal,
+                            textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None
+                        )
+                    }
+
+                    if (block.isDisplaced) {
+                        Text(
+                            text = "Shifted from Morning",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = TextMutedTeal,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+                    }
                 }
 
-                // Completion Checkbox icon
-                Icon(
-                    imageVector = if (isCompleted) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
-                    contentDescription = if (isCompleted) "Completed" else "Incomplete",
-                    tint = if (isCompleted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
-                    modifier = Modifier.size(28.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Title with strike-through when completed
-            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Right End: Gold Star for appointment, or Chevron for subtasks
                 if (isAppointment) {
                     Icon(
-                        imageVector = Icons.Default.Event,
-                        contentDescription = "Appointment Priority",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .padding(end = 6.dp)
+                        imageVector = Icons.Filled.Star,
+                        contentDescription = "Priority Appointment",
+                        tint = GoldStarColor,
+                        modifier = Modifier.size(20.dp)
                     )
+                } else if (block.subtasks.isNotEmpty()) {
+                    IconButton(
+                        onClick = { isExpanded = !isExpanded },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                            contentDescription = if (isExpanded) "Collapse" else "Expand",
+                            tint = TextMutedTeal
+                        )
+                    }
                 }
-                Text(
-                    text = block.title,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = if (isAppointment) FontWeight.Black else FontWeight.Bold,
-                    textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None,
-                    color = if (isCompleted) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface
-                )
             }
-            
-            // Subtasks
-            if (block.subtasks.isNotEmpty()) {
+
+            // Subtasks List
+            if (block.subtasks.isNotEmpty() && isExpanded) {
                 Spacer(modifier = Modifier.height(8.dp))
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(
+                    modifier = Modifier.padding(start = 32.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
                     block.subtasks.forEach { subtask ->
                         SubtaskRow(
                             subtask = subtask,
@@ -133,37 +160,34 @@ fun AgendaBlockCard(
                     }
                 }
             }
+        }
+    }
+}
 
-            // Displaced Amber Badge
-            if (block.isDisplaced) {
-                Spacer(modifier = Modifier.height(10.dp))
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = AmberNoticeBg,
-                    border = BorderStroke(1.dp, AmberNoticeText.copy(alpha = 0.3f))
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 10.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Warning,
-                            contentDescription = "Shifted",
-                            tint = AmberNoticeText,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Shifted to Flex Slot due to appointment",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = AmberNoticeText
-                        )
-                    }
-                }
-            }
+@Composable
+private fun GlassSquareCheckbox(
+    checked: Boolean,
+    onCheckedChange: () -> Unit,
+    isAppointment: Boolean = false
+) {
+    val borderColor = if (isAppointment) GoldGlassBorder else if (checked) CyanAccent else GlassCardBorder
+    val checkColor = if (isAppointment) GoldStarColor else CyanAccent
+
+    Box(
+        modifier = Modifier
+            .size(18.dp)
+            .clip(RoundedCornerShape(4.dp))
+            .border(1.5.dp, borderColor, RoundedCornerShape(4.dp))
+            .clickable { onCheckedChange() },
+        contentAlignment = Alignment.Center
+    ) {
+        if (checked) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = null,
+                tint = checkColor,
+                modifier = Modifier.size(13.dp)
+            )
         }
     }
 }
@@ -176,51 +200,35 @@ private fun SubtaskRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(enabled = true, onClick = onToggle)
-            .padding(vertical = 4.dp),
+            .clickable { onToggle() }
+            .padding(vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Checkbox(
+        GlassSquareCheckbox(
             checked = subtask.isCompleted,
-            onCheckedChange = { onToggle() },
-            modifier = Modifier.size(20.dp)
+            onCheckedChange = onToggle
         )
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(10.dp))
         Text(
             text = subtask.name,
             style = MaterialTheme.typography.bodyMedium,
-            color = if (subtask.isCompleted) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface,
-            textDecoration = if (subtask.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
-            fontWeight = FontWeight.Medium
+            color = if (subtask.isCompleted) TextMutedTeal else TextSecondaryTeal,
+            textDecoration = if (subtask.isCompleted) TextDecoration.LineThrough else TextDecoration.None
         )
     }
 }
 
-@Composable
-private fun CategoryBadge(category: Category) {
-    val (bgColor, textColor) = when (category) {
-        Category.ROUTINE -> MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
-        Category.STUDY -> MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
-        Category.PROSPECTING -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
-        Category.FLEX -> MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurfaceVariant
-        Category.APPOINTMENT -> MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
-    }
+private fun formatTimeRange(start: LocalTime, end: LocalTime): String {
+    val timeFormatter = DateTimeFormatter.ofPattern("h:mm")
+    val amPmFormatter = DateTimeFormatter.ofPattern("a")
 
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = bgColor
-    ) {
-        Text(
-            text = category.name,
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-            color = textColor
-        )
-    }
-}
+    val startStr = start.format(timeFormatter)
+    val endStr = end.format(timeFormatter)
+    val endAmPm = end.format(amPmFormatter)
 
-private fun formatTime(time: LocalTime): String {
-    val formatter = DateTimeFormatter.ofPattern("h:mm a")
-    return time.format(formatter)
+    return if (start.hour == end.hour && start.minute == end.minute) {
+        start.format(DateTimeFormatter.ofPattern("h:mm a"))
+    } else {
+        "$startStr–$endStr $endAmPm"
+    }
 }

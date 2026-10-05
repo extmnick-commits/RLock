@@ -1,29 +1,43 @@
 package com.example.rlock.ui.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.rlock.model.MetricGoal
+import com.example.rlock.ui.theme.CyanAccent
+import com.example.rlock.ui.theme.GlassCardBg
+import com.example.rlock.ui.theme.GlassCardBorder
+import com.example.rlock.ui.theme.GlassCardHeaderBg
+import com.example.rlock.ui.theme.MintGaugeTrack
+import com.example.rlock.ui.theme.TextMutedTeal
+import com.example.rlock.ui.theme.TextPrimaryTeal
+import com.example.rlock.ui.theme.TextSecondaryTeal
 
 @Composable
 fun ScorecardHeader(
@@ -31,37 +45,32 @@ fun ScorecardHeader(
     onIncrementMetric: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        shadowElevation = 2.dp
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp, bottom = 4.dp)
     ) {
-        Column(
+        Text(
+            text = "DAILY SCORECARD GOALS",
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp,
+            color = TextMutedTeal,
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 4.dp)
+        )
+
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp)
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text(
-                text = "Daily Scorecard Goals",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 6.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                metrics.forEach { metric ->
-                    MetricCard(
-                        metric = metric,
-                        onIncrement = { onIncrementMetric(metric.id) }
-                    )
-                }
+            metrics.forEach { metric ->
+                MetricCard(
+                    metric = metric,
+                    onIncrement = { onIncrementMetric(metric.id) }
+                )
             }
         }
     }
@@ -72,67 +81,111 @@ private fun MetricCard(
     metric: MetricGoal,
     onIncrement: () -> Unit
 ) {
-    val progress = if (metric.target > 0) {
-        (metric.current.toFloat() / metric.target.toFloat()).coerceIn(0f, 1f)
-    } else 0f
-
-    Card(
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = GlassCardBg,
+        border = BorderStroke(1.dp, GlassCardBorder)
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier.width(140.dp)
-            ) {
-                Text(
-                    text = metric.name,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                
-                Text(
-                    text = "${metric.current} / ${metric.target}",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Black,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                LinearProgressIndicator(
-                    progress = { progress },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(6.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.outlineVariant,
-                    strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
-                )
-            }
+            Text(
+                text = metric.name,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Medium,
+                color = TextSecondaryTeal,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            FilledTonalButton(
-                onClick = onIncrement,
-                shape = RoundedCornerShape(12.dp),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Text(
-                    text = "+1",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                CircularGauge(
+                    current = metric.current,
+                    target = metric.target
                 )
+
+                // +1 Glass Pill Button
+                Surface(
+                    onClick = onIncrement,
+                    shape = RoundedCornerShape(12.dp),
+                    color = GlassCardHeaderBg,
+                    border = BorderStroke(1.dp, CyanAccent.copy(alpha = 0.5f))
+                ) {
+                    Text(
+                        text = "+1",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = CyanAccent,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                    )
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun CircularGauge(
+    current: Int,
+    target: Int,
+    modifier: Modifier = Modifier
+) {
+    val progress = if (target > 0) (current.toFloat() / target.toFloat()).coerceIn(0f, 1f) else 0f
+
+    Box(
+        modifier = modifier.size(50.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val strokeWidth = 4.5.dp.toPx()
+            val diameter = size.minDimension - strokeWidth
+            val topLeftOffset = Offset(strokeWidth / 2, strokeWidth / 2)
+            val arcSize = Size(diameter, diameter)
+
+            // Background Track Ring
+            drawArc(
+                color = MintGaugeTrack,
+                startAngle = 0f,
+                sweepAngle = 360f,
+                useCenter = false,
+                topLeft = topLeftOffset,
+                size = arcSize,
+                style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+            )
+
+            // Progress Arc
+            drawArc(
+                color = CyanAccent,
+                startAngle = -90f,
+                sweepAngle = 360f * progress,
+                useCenter = false,
+                topLeft = topLeftOffset,
+                size = arcSize,
+                style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+            )
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "$current",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimaryTeal
+            )
+            Text(
+                text = "/$target",
+                style = MaterialTheme.typography.labelSmall,
+                color = TextMutedTeal
+            )
         }
     }
 }
