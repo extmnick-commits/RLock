@@ -77,6 +77,7 @@ fun RLockApp(
     var showAddAppointmentDialog by remember { mutableStateOf(false) }
     var showQuickAddBlockDialog by remember { mutableStateOf(false) }
     var showScorecardBottomSheet by remember { mutableStateOf(false) }
+    var showSettingsScreen by remember { mutableStateOf(false) }
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Scaffold(
@@ -85,10 +86,17 @@ fun RLockApp(
             TopAppBar(
                 title = {
                     Text(
-                        text = if (pagerState.currentPage == 0) "RLock • DAILY AGENDA" else "RLock • DEFAULTS & GOALS",
+                        text = if (pagerState.currentPage == 0) "RLock • DAILY AGENDA" else "RLock • SIDE QUESTS",
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleLarge
                     )
+                },
+                actions = {
+                    androidx.compose.material3.IconButton(onClick = {
+                        showSettingsScreen = true
+                    }) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings", tint = TextPrimaryTeal)
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = DarkTealBg,
@@ -97,6 +105,7 @@ fun RLockApp(
             )
         },
         bottomBar = {
+
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -132,10 +141,10 @@ fun RLockApp(
                     NavigationBarItem(
                         selected = pagerState.currentPage == 1,
                         onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
-                        icon = { Icon(Icons.Default.Settings, contentDescription = "Defaults & Goals") },
+                        icon = { Icon(androidx.compose.material.icons.Icons.Default.CheckCircle, contentDescription = "Side Quests") },
                         label = {
                             Text(
-                                "SETTINGS",
+                                "SIDE QUEST",
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.labelMedium
                             )
@@ -195,26 +204,8 @@ fun RLockApp(
                         )
                     }
                 } else {
-                    // Edit Daily Defaults (Settings Screen)
-                    SettingsScreen(
-                        templates = templates,
-                        metrics = scorecard.metrics,
-                        onSaveTemplate = { template ->
-                            viewModel.saveTemplate(template)
-                        },
-                        onDeleteTemplate = { templateId ->
-                            viewModel.deleteTemplate(templateId)
-                        },
-                        onSaveMetric = { metric ->
-                            viewModel.addMetricGoal(metric.name, metric.target)
-                        },
-                        onUpdateMetric = { metricId, name, target ->
-                            viewModel.updateMetricGoal(metricId, name, target)
-                        },
-                        onDeleteMetric = { metricId ->
-                            viewModel.deleteMetricGoal(metricId)
-                        }
-                    )
+                    // Side Quest Screen
+                    com.example.rlock.ui.screens.SideQuestScreen(viewModel = viewModel)
                 }
             }
         }
@@ -260,6 +251,41 @@ fun RLockApp(
                 metrics = scorecard.metrics,
                 agendaBlocks = agendaBlocks
             )
+        }
+    }
+
+    if (showSettingsScreen) {
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { showSettingsScreen = false },
+            properties = androidx.compose.ui.window.DialogProperties(
+                usePlatformDefaultWidth = false
+            )
+        ) {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = DarkTealBg
+            ) {
+                SettingsScreen(
+                    templates = templates,
+                    metrics = scorecard.metrics,
+                    onSaveTemplate = { template ->
+                        viewModel.saveTemplate(template)
+                    },
+                    onDeleteTemplate = { templateId ->
+                        viewModel.deleteTemplate(templateId)
+                    },
+                    onSaveMetric = { metric ->
+                        viewModel.addMetricGoal(metric.name, metric.target)
+                    },
+                    onUpdateMetric = { metricId, name, target ->
+                        viewModel.updateMetricGoal(metricId, name, target)
+                    },
+                    onDeleteMetric = { metricId ->
+                        viewModel.deleteMetricGoal(metricId)
+                    },
+                    onDismiss = { showSettingsScreen = false }
+                )
+            }
         }
     }
 }

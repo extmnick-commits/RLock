@@ -8,6 +8,7 @@ import com.example.rlock.model.BlockTemplate
 import com.example.rlock.model.Category
 import com.example.rlock.model.DailyScorecard
 import com.example.rlock.model.MetricGoal
+import com.example.rlock.model.SideQuest
 import com.example.rlock.model.Subtask
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,6 +30,9 @@ class RLockViewModel(
     val agendaBlocks: StateFlow<List<AgendaBlock>> = _agendaBlocks.asStateFlow()
 
     private val _metrics = MutableStateFlow<List<MetricGoal>>(repository.getDefaultMetrics())
+    
+    private val _sideQuests = MutableStateFlow<List<SideQuest>>(emptyList())
+    val sideQuests: StateFlow<List<SideQuest>> = _sideQuests.asStateFlow()
     
     val scorecard: StateFlow<DailyScorecard> = combine(_agendaBlocks, _metrics) { blocks, metrics ->
         DailyScorecard(
@@ -256,6 +260,32 @@ class RLockViewModel(
     fun deleteTemplate(templateId: String) {
         viewModelScope.launch {
             repository.deleteTemplate(templateId)
+        }
+    }
+
+    fun addSideQuest(title: String) {
+        if (title.isBlank()) return
+        val newQuest = SideQuest(title = title)
+        _sideQuests.update { current ->
+            (listOf(newQuest) + current).sortedBy { it.createdAt }
+        }
+    }
+
+    fun toggleSideQuest(id: String) {
+        _sideQuests.update { current ->
+            current.map { if (it.id == id) it.copy(isCompleted = !it.isCompleted) else it }
+        }
+    }
+
+    fun deleteSideQuest(id: String) {
+        _sideQuests.update { current ->
+            current.filter { it.id != id }
+        }
+    }
+
+    fun clearCompletedSideQuests() {
+        _sideQuests.update { current ->
+            current.filter { !it.isCompleted }
         }
     }
 }

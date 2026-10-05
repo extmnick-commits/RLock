@@ -58,9 +58,16 @@ import com.example.rlock.ui.theme.GlassDialogBg
 import com.example.rlock.ui.theme.TextMutedTeal
 import com.example.rlock.ui.theme.TextPrimaryTeal
 import com.example.rlock.ui.theme.TextSecondaryTeal
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.text.style.TextOverflow
+import com.example.rlock.ui.theme.DarkTealBg
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     templates: List<BlockTemplate>,
@@ -70,6 +77,7 @@ fun SettingsScreen(
     onSaveMetric: (MetricGoal) -> Unit,
     onUpdateMetric: (String, String, Int) -> Unit,
     onDeleteMetric: (String) -> Unit,
+    onDismiss: () -> Unit = {},
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
@@ -79,103 +87,136 @@ fun SettingsScreen(
     var editingMetric by remember { mutableStateOf<MetricGoal?>(null) }
     var showAddMetricDialog by remember { mutableStateOf(false) }
 
-    LazyColumn(
+    Scaffold(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(
-            top = contentPadding.calculateTopPadding() + 12.dp,
-            bottom = contentPadding.calculateBottomPadding() + 90.dp,
-            start = 16.dp,
-            end = 16.dp
-        ),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Section 1: Scorecard Goals
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
+        containerColor = DarkTealBg,
+        topBar = {
+            TopAppBar(
+                title = {
                     Text(
-                        text = "Edit Scorecard Goals",
-                        style = MaterialTheme.typography.titleLarge,
+                        text = "Settings",
                         fontWeight = FontWeight.Bold,
-                        color = TextPrimaryTeal
+                        style = MaterialTheme.typography.titleLarge
                     )
-                    Text(
-                        text = "Customize metric names and targets",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextMutedTeal
-                    )
-                }
-
-                OutlinedButton(
-                    onClick = { showAddMetricDialog = true },
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, CyanAccent)
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add Goal", tint = CyanAccent)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Add Goal", color = CyanAccent, fontWeight = FontWeight.Bold)
-                }
-            }
-        }
-
-        items(metrics, key = { it.id }) { metric ->
-            MetricGoalSettingCard(
-                metric = metric,
-                onEdit = { editingMetric = metric },
-                onDelete = { onDeleteMetric(metric.id) }
+                },
+                navigationIcon = {
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close Settings",
+                            tint = TextPrimaryTeal
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = DarkTealBg,
+                    titleContentColor = TextPrimaryTeal
+                )
             )
         }
-
-        // Section 2: Default Block Templates
-        item {
-            Spacer(modifier = Modifier.height(12.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = "Edit Daily Block Defaults",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimaryTeal
-                    )
-                    Text(
-                        text = "Configure templates and shift fallback slots",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextMutedTeal
-                    )
-                }
-
-                Surface(
-                    onClick = { showAddTemplateDialog = true },
-                    shape = RoundedCornerShape(12.dp),
-                    color = GlassCardBg,
-                    border = BorderStroke(1.dp, CyanAccent)
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding() + contentPadding.calculateTopPadding() + 8.dp,
+                bottom = innerPadding.calculateBottomPadding() + contentPadding.calculateBottomPadding() + 24.dp,
+                start = 16.dp,
+                end = 16.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Section 1: Scorecard Goals
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    Column(modifier = Modifier.weight(1f, fill = false)) {
+                        Text(
+                            text = "Edit Scorecard Goals",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimaryTeal
+                        )
+                        Text(
+                            text = "Customize metric names and targets",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextMutedTeal
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    OutlinedButton(
+                        onClick = { showAddMetricDialog = true },
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, CyanAccent)
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = "Add Block", tint = CyanAccent)
+                        Icon(Icons.Default.Add, contentDescription = "Add Goal", tint = CyanAccent)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Add Block", color = CyanAccent, fontWeight = FontWeight.Bold)
+                        Text("Add Goal", color = CyanAccent, fontWeight = FontWeight.Bold)
                     }
                 }
             }
-        }
 
-        items(templates, key = { it.id }) { template ->
-            TemplateSettingCard(
-                template = template,
-                onEdit = { editingTemplate = template },
-                onDelete = { onDeleteTemplate(template.id) }
-            )
+            items(metrics, key = { it.id }) { metric ->
+                MetricGoalSettingCard(
+                    metric = metric,
+                    onEdit = { editingMetric = metric },
+                    onDelete = { onDeleteMetric(metric.id) }
+                )
+            }
+
+            // Section 2: Default Block Templates
+            item {
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f, fill = false)) {
+                        Text(
+                            text = "Edit Daily Block Defaults",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimaryTeal
+                        )
+                        Text(
+                            text = "Configure templates and shift fallback slots",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextMutedTeal
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Surface(
+                        onClick = { showAddTemplateDialog = true },
+                        shape = RoundedCornerShape(12.dp),
+                        color = GlassCardBg,
+                        border = BorderStroke(1.dp, CyanAccent)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Add Block", tint = CyanAccent)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Add Block", color = CyanAccent, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+
+            items(templates, key = { it.id }) { template ->
+                TemplateSettingCard(
+                    template = template,
+                    onEdit = { editingTemplate = template },
+                    onDelete = { onDeleteTemplate(template.id) }
+                )
+            }
         }
     }
 
@@ -234,12 +275,14 @@ private fun MetricGoalSettingCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = metric.name,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimaryTeal
+                    color = TextPrimaryTeal,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     text = "Target: ${metric.target}",
@@ -282,7 +325,10 @@ private fun TemplateSettingCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Surface(
                         shape = RoundedCornerShape(10.dp),
                         color = GlassCardHeaderBg,
@@ -301,7 +347,9 @@ private fun TemplateSettingCard(
                         text = template.title,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = TextPrimaryTeal
+                        color = TextPrimaryTeal,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 

@@ -67,3 +67,10 @@ data class DailyScorecard(
     val metrics: List<MetricGoal>,
     val date: String // e.g. "2023-10-25" or a simple LocalDate string
 )
+
+data class SideQuest(
+    val id: String = UUID.randomUUID().toString(),
+    val title: String,
+    val isCompleted: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis()
+)
