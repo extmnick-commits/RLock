@@ -62,15 +62,19 @@ import com.example.rlock.ui.theme.GlassCrimsonHighlight
 import com.example.rlock.ui.theme.GoldGlassBg
 import com.example.rlock.ui.theme.GoldGlassBorder
 import com.example.rlock.ui.theme.GoldStarColor
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AgendaBlockCard(
     block: AgendaBlock,
     onToggleCompletion: (String) -> Unit,
     onToggleSubtask: (String, String) -> Unit,
     onAddSubtask: (String, String) -> Unit,
+    onEditBlock: (AgendaBlock) -> Unit,
     modifier: Modifier = Modifier,
     categories: List<CustomCategory> = emptyList()
 ) {
@@ -91,7 +95,10 @@ fun AgendaBlockCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .clickable { isExpanded = !isExpanded },
+            .combinedClickable(
+                onClick = { isExpanded = !isExpanded },
+                onLongClick = { onEditBlock(block) }
+            ),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = cardBg),
         border = BorderStroke(1.dp, cardBorder)

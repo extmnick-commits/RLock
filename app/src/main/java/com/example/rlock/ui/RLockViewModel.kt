@@ -362,6 +362,31 @@ class RLockViewModel(
         persistData()
     }
 
+    fun updateAgendaBlock(blockId: String, title: String, start: LocalTime, end: LocalTime) {
+        _agendaBlocks.update { currentBlocks ->
+            currentBlocks.map { block ->
+                if (block.id == blockId) {
+                    block.copy(
+                        title = title,
+                        categoryName = title,
+                        startTime = start,
+                        endTime = end
+                    )
+                } else {
+                    block
+                }
+            }.sortedBy { it.startTime }
+        }
+        persistData()
+    }
+
+    fun deleteAgendaBlock(blockId: String) {
+        _agendaBlocks.update { currentBlocks ->
+            currentBlocks.filter { it.id != blockId }
+        }
+        persistData()
+    }
+
     fun resetTodayToDefaults() {
         _agendaBlocks.value = _templates.value.map { template ->
             AgendaBlock(

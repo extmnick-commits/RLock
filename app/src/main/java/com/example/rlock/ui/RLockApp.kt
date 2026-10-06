@@ -49,11 +49,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
+import com.example.rlock.model.AgendaBlock
 import com.example.rlock.ui.components.AgendaList
 import com.example.rlock.ui.components.RLockSpeedDialFab
 import com.example.rlock.ui.components.ScorecardHeader
 import com.example.rlock.ui.dialogs.AddAppointmentDialog
 import com.example.rlock.ui.dialogs.AddQuickBlockDialog
+import com.example.rlock.ui.dialogs.EditAgendaBlockDialog
 import com.example.rlock.ui.screens.SettingsScreen
 import com.example.rlock.ui.screens.SideQuestScreen
 import com.example.rlock.ui.theme.CrimsonAccent
@@ -80,6 +82,7 @@ fun RLockApp(
     var showSettingsScreen by remember { mutableStateOf(false) }
     var showAddAppointmentDialog by remember { mutableStateOf(false) }
     var showAddQuickBlockDialog by remember { mutableStateOf(false) }
+    var editingBlock by remember { mutableStateOf<AgendaBlock?>(null) }
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Scaffold(
@@ -202,6 +205,9 @@ fun RLockApp(
                             onAddSubtask = { blockId, subtaskId ->
                                 viewModel.addSubtask(blockId, subtaskId)
                             },
+                            onEditBlock = { block ->
+                                editingBlock = block
+                            },
                             onOpenScorecard = {
                                 showScorecardBottomSheet = true
                             }
@@ -213,6 +219,21 @@ fun RLockApp(
                 }
             }
         }
+    }
+
+    editingBlock?.let { block ->
+        EditAgendaBlockDialog(
+            block = block,
+            onDismiss = { editingBlock = null },
+            onSave = { title, start, end ->
+                viewModel.updateAgendaBlock(block.id, title, start, end)
+                editingBlock = null
+            },
+            onDelete = {
+                viewModel.deleteAgendaBlock(block.id)
+                editingBlock = null
+            }
+        )
     }
 
     if (showAddAppointmentDialog) {
