@@ -127,6 +127,8 @@ fun AgendaBlockCard(
                         categoryName
                     }
 
+                    val showLabel = !displayLabel.equals(categoryName, ignoreCase = true)
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -135,15 +137,18 @@ fun AgendaBlockCard(
                             text = formatTimeRange(block.startTime, block.endTime),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
-                            color = if (isCompleted) CrimsonTextSecondary else CrimsonTextPrimary
+                            color = if (isCompleted) CrimsonTextSecondary else CrimsonTextPrimary,
+                            textDecoration = if (isCompleted && !showLabel) TextDecoration.LineThrough else TextDecoration.None
                         )
-                        Text(
-                            text = "$categoryEmoji $displayLabel",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = if (isAppointment) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isCompleted) CrimsonTextSecondary else categoryColor,
-                            textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None
-                        )
+                        if (showLabel) {
+                            Text(
+                                text = "$categoryEmoji $displayLabel",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = if (isAppointment) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isCompleted) CrimsonTextSecondary else categoryColor,
+                                textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None
+                            )
+                        }
                     }
 
                     if (block.isDisplaced) {
