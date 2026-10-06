@@ -32,7 +32,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import com.example.rlock.model.CustomCategory
 import androidx.compose.runtime.Composable
@@ -117,6 +116,17 @@ fun AgendaBlockCard(
 
                 // Title and Time
                 Column(modifier = Modifier.weight(1f)) {
+                    val category = categories.find { it.id == block.categoryId || it.name.equals(block.category, ignoreCase = true) }
+                    val categoryEmoji = category?.emoji ?: "📌"
+                    val categoryName = category?.name ?: block.categoryName.ifBlank { "General" }
+                    val categoryColor = category?.colorHex?.let { Color(it) } ?: CrimsonAccent
+
+                    val displayLabel = if (block.title.isNotBlank() && block.title != "Untitled Block") {
+                        block.title
+                    } else {
+                        categoryName
+                    }
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -128,32 +138,11 @@ fun AgendaBlockCard(
                             color = if (isCompleted) CrimsonTextSecondary else CrimsonTextPrimary
                         )
                         Text(
-                            text = block.title,
+                            text = "$categoryEmoji $displayLabel",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = if (isAppointment) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isCompleted) CrimsonTextSecondary else CrimsonTextPrimary,
+                            color = if (isCompleted) CrimsonTextSecondary else categoryColor,
                             textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None
-                        )
-                    }
-
-                    // Category Badge Chip
-                    val category = categories.find { it.id == block.categoryId || it.name.equals(block.category, ignoreCase = true) }
-                    val categoryEmoji = category?.emoji ?: "📌"
-                    val categoryName = category?.name ?: block.categoryName.ifBlank { "General" }
-                    val categoryColor = category?.colorHex?.let { Color(it) } ?: CrimsonAccent
-
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = categoryColor.copy(alpha = 0.15f),
-                        border = BorderStroke(1.dp, categoryColor.copy(alpha = 0.3f)),
-                        modifier = Modifier.padding(top = 4.dp)
-                    ) {
-                        Text(
-                            text = "$categoryEmoji $categoryName",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = categoryColor,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }
 

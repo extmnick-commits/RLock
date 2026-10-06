@@ -10,16 +10,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -31,12 +32,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.rlock.ui.theme.CrimsonAccent
 import com.example.rlock.ui.theme.GlassCrimson
-import com.example.rlock.ui.theme.GlassNavBarBg
 
 @Composable
 fun RLockSpeedDialFab(
@@ -47,7 +47,7 @@ fun RLockSpeedDialFab(
     var expanded by remember { mutableStateOf(false) }
 
     Column(
-        modifier = modifier.padding(bottom = 54.dp, end = 12.dp),
+        modifier = modifier,
         horizontalAlignment = Alignment.End
     ) {
         AnimatedVisibility(
@@ -57,15 +57,16 @@ fun RLockSpeedDialFab(
         ) {
             Column(
                 horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.padding(bottom = 12.dp)
             ) {
-                // Secondary action: Quick Add Block
+                // Option 1: Quick Add Agenda Block
                 Surface(
                     onClick = {
                         expanded = false
                         onQuickAddBlockClick()
                     },
-                    shape = RoundedCornerShape(24.dp),
+                    shape = RoundedCornerShape(20.dp),
                     color = GlassCrimson,
                     border = BorderStroke(1.dp, CrimsonAccent)
                 ) {
@@ -81,7 +82,7 @@ fun RLockSpeedDialFab(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "QUICK ADD BLOCK",
+                            text = "Add Agenda Block",
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
                             color = CrimsonAccent
@@ -89,13 +90,13 @@ fun RLockSpeedDialFab(
                     }
                 }
 
-                // Primary action in speed dial: Add Appointment
+                // Option 2: Add Appointment
                 Surface(
                     onClick = {
                         expanded = false
                         onAddAppointmentClick()
                     },
-                    shape = RoundedCornerShape(24.dp),
+                    shape = RoundedCornerShape(20.dp),
                     color = GlassCrimson,
                     border = BorderStroke(1.dp, CrimsonAccent)
                 ) {
@@ -111,7 +112,7 @@ fun RLockSpeedDialFab(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "ADD APPOINTMENT",
+                            text = "Add Appointment",
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
                             color = CrimsonAccent
@@ -121,34 +122,17 @@ fun RLockSpeedDialFab(
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // Main Glass Pill FAB
-        Surface(
+        // Circular FloatingActionButton
+        FloatingActionButton(
             onClick = { expanded = !expanded },
-            shape = RoundedCornerShape(24.dp),
-            color = GlassNavBarBg,
-            border = BorderStroke(1.dp, CrimsonAccent)
+            containerColor = CrimsonAccent,
+            contentColor = Color.White,
+            shape = CircleShape
         ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = if (expanded) Icons.Default.Close else Icons.Default.Add,
-                    contentDescription = "Add",
-                    tint = CrimsonAccent,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = if (expanded) "CLOSE" else "ADD APPOINTMENT",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.5.sp,
-                    color = CrimsonAccent
-                )
-            }
+            Icon(
+                imageVector = if (expanded) Icons.Default.Close else Icons.Default.Add,
+                contentDescription = if (expanded) "Close Menu" else "Add Options"
+            )
         }
     }
 }

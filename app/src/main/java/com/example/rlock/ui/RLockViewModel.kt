@@ -1,6 +1,9 @@
 package com.example.rlock.ui
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rlock.data.TemplateRepository
 import com.example.rlock.model.AgendaBlock
@@ -54,17 +57,25 @@ val gson: Gson = GsonBuilder()
     .create()
 
 class RLockViewModel(
-    private val repository: TemplateRepository
-) : ViewModel() {
+    application: Application
+) : AndroidViewModel(application) {
+
+    private val prefs: SharedPreferences = application.getSharedPreferences("rlock_prefs", Context.MODE_PRIVATE)
 
     private val _agendaBlocks = MutableStateFlow<List<AgendaBlock>>(emptyList())
     val agendaBlocks: StateFlow<List<AgendaBlock>> = _agendaBlocks.asStateFlow()
 
-    private val _metrics = MutableStateFlow<List<MetricGoal>>(repository.getDefaultMetrics())
+    private val _metrics = MutableStateFlow<List<MetricGoal>>(emptyList())
     
     private val _sideQuests = MutableStateFlow<List<SideQuest>>(emptyList())
     val sideQuests: StateFlow<List<SideQuest>> = _sideQuests.asStateFlow()
     
+    private val _templates = MutableStateFlow<List<BlockTemplate>>(emptyList())
+    val templates: StateFlow<List<BlockTemplate>> = _templates.asStateFlow()
+
+    private val _categories = MutableStateFlow<List<CustomCategory>>(emptyList())
+    val categories: StateFlow<List<CustomCategory>> = _categories.asStateFlow()
+
     val scorecard: StateFlow<DailyScorecard> = combine(_agendaBlocks, _metrics) { blocks, metrics ->
         DailyScorecard(
             metrics = metrics,
@@ -73,42 +84,49 @@ class RLockViewModel(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = DailyScorecard(repository.getDefaultMetrics(), LocalDate.now().toString())
+        initialValue = DailyScorecard(emptyList(), LocalDate.now().toString())
     )
-
-    val templates: StateFlow<List<BlockTemplate>> = repository.getTemplates()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
-        
-    val categories: StateFlow<List<CustomCategory>> = repository.getCategories()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = CustomCategory.defaultCategories
-        )
 
     val categoryMap: StateFlow<Map<String, CustomCategory>> = categories
         .map { list -> list.associateBy { it.id } }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = CustomCategory.defaultCategories.associateBy { it.id }
+            initialValue = emptyMap()
         )
 
     init {
-        // Initialize today's agenda based on default templates
-        _agendaBlocks.value = repository.generateTodayAgenda()
+        val isFirstLaunch = prefs.getBoolean("isFirstLaunch", true)
+        if (isFirstLaunch) {
+            loadStarterTemplate()
+            prefs.edit().putBoolean("isFirstLaunch", false).apply()
+        } else {
+            val savedJson = prefs.getString("backup_data", null)
+            if (savedJson != null) {
+                restoreFromBackupJson(savedJson)
+            }
+        }
+    }
+
+    private fun persistData() {
+        val json = exportBackupJson()
+        prefs.edit().putString("backup_data", json).apply()
     }
 
     fun addCategory(name: String, emoji: String, colorHex: Long) {
-        repository.addCategory(CustomCategory(name = name, emoji = emoji, colorHex = colorHex))
+        _categories.update { it + CustomCategory(name = name, emoji = emoji, colorHex = colorHex) }
+        persistData()
     }
 
     fun updateCategory(category: CustomCategory) {
-        repository.updateCategory(category)
+        _categories.update { list ->
+            val index = list.indexOfFirst { it.id == category.id }
+            if (index != -1) {
+                list.toMutableList().apply { set(index, category) }
+            } else {
+                list + category
+            }
+        }
         
         // Also update any existing blocks for today with the new category name
         _agendaBlocks.update { currentBlocks ->
@@ -120,10 +138,20 @@ class RLockViewModel(
                 }
             }
         }
+        persistData()
     }
 
     fun deleteCategory(categoryId: String) {
-        repository.deleteCategory(categoryId)
+        _categories.update { list -> list.filter { it.id != categoryId } }
+        _templates.update { list ->
+            list.map {
+                if (it.categoryId == categoryId) {
+                    it.copy(categoryId = CustomCategory.GENERAL.id, categoryName = CustomCategory.GENERAL.name)
+                } else {
+                    it
+                }
+            }
+        }
         // Also update any existing blocks for today to GENERAL
         _agendaBlocks.update { currentBlocks ->
             currentBlocks.map { block ->
@@ -134,15 +162,24 @@ class RLockViewModel(
                 }
             }
         }
+        persistData()
     }
 
     fun addTemplateBlock(template: BlockTemplate) {
-        repository.addTemplate(template)
+        _templates.update { it + template }
         addAgendaBlockForTemplate(template)
+        persistData()
     }
 
     fun updateTemplateBlock(template: BlockTemplate) {
-        repository.updateTemplate(template)
+        _templates.update { currentTemplates ->
+            val index = currentTemplates.indexOfFirst { it.id == template.id }
+            if (index != -1) {
+                currentTemplates.toMutableList().apply { set(index, template) }
+            } else {
+                currentTemplates + template
+            }
+        }
         // Update today's agenda block if it exists
         _agendaBlocks.update { blocks ->
             blocks.map { 
@@ -167,14 +204,18 @@ class RLockViewModel(
                 }
             }
         }
+        persistData()
     }
 
     fun deleteTemplateBlock(templateId: String) {
-        repository.deleteTemplate(templateId)
+        _templates.update { currentTemplates ->
+            currentTemplates.filter { it.id != templateId }
+        }
         // Remove from today's agenda
         _agendaBlocks.update { currentBlocks ->
             currentBlocks.filter { it.templateId != templateId }
         }
+        persistData()
     }
 
     fun saveTemplate(template: BlockTemplate) {
@@ -239,7 +280,7 @@ class RLockViewModel(
                 if (isOverlapping) {
                     if (block.shiftable && block.fallbackStartTime != null && block.fallbackEndTime != null) {
                         // Shift to fallback time
-                        val newTitle = if (block.title.contains("Series 26", ignoreCase = true)) "Series 26 Flex Study" else block.title
+                        val newTitle = block.title
                         updatedBlocks.add(
                             block.copy(
                                 title = newTitle,
@@ -275,6 +316,7 @@ class RLockViewModel(
             // Return sorted by start time
             updatedBlocks.sortedBy { it.startTime }
         }
+        persistData()
     }
 
     fun addQuickBlock(
@@ -286,10 +328,11 @@ class RLockViewModel(
         fallbackStart: LocalTime? = null,
         fallbackEnd: LocalTime? = null
     ) {
+        val blockTitle = title.ifBlank { category.name }
         val newBlock = AgendaBlock(
-            title = title,
+            title = blockTitle,
             categoryId = category.id,
-            categoryName = category.name,
+            categoryName = blockTitle,
             startTime = start,
             endTime = end,
             shiftable = shiftable,
@@ -299,10 +342,27 @@ class RLockViewModel(
         _agendaBlocks.update { current ->
             (current + newBlock).sortedBy { it.startTime }
         }
+        persistData()
     }
 
     fun resetTodayToDefaults() {
-        _agendaBlocks.value = repository.generateTodayAgenda()
+        _agendaBlocks.value = _templates.value.map { template ->
+            AgendaBlock(
+                templateId = template.id,
+                title = template.title,
+                section = template.section,
+                categoryId = template.categoryId,
+                categoryName = template.categoryName,
+                startTime = template.defaultStart,
+                endTime = template.defaultEnd,
+                shiftable = template.shiftable,
+                fallbackStartTime = template.fallbackStartTime,
+                fallbackEndTime = template.fallbackEndTime,
+                subtasks = template.subtasks.map { it.copy(id = UUID.randomUUID().toString(), isCompleted = false) }.toMutableList(),
+                isNotificationEnabled = template.isNotificationEnabled
+            )
+        }.sortedBy { it.startTime }
+        persistData()
     }
 
     fun toggleBlockCompletion(blockId: String) {
@@ -319,6 +379,7 @@ class RLockViewModel(
                 }
             }
         }
+        persistData()
     }
 
     fun toggleSubtaskCompletion(blockId: String, subtaskId: String) {
@@ -335,6 +396,7 @@ class RLockViewModel(
                 }
             }
         }
+        persistData()
     }
 
     fun incrementMetric(metricId: String, delta: Int) {
@@ -347,6 +409,7 @@ class RLockViewModel(
                 }
             }
         }
+        persistData()
     }
 
     fun updateMetricGoal(metricId: String, name: String, target: Int) {
@@ -359,15 +422,18 @@ class RLockViewModel(
                 }
             }
         }
+        persistData()
     }
 
     fun addMetricGoal(name: String, target: Int) {
         val newMetric = MetricGoal(name = name, target = target)
         _metrics.update { current -> current + newMetric }
+        persistData()
     }
 
     fun deleteMetricGoal(metricId: String) {
         _metrics.update { current -> current.filter { it.id != metricId } }
+        persistData()
     }
 
     fun addSubtask(blockId: String, subtaskName: String) {
@@ -381,6 +447,7 @@ class RLockViewModel(
                 }
             }
         }
+        persistData()
     }
 
     fun addSideQuest(title: String) {
@@ -389,24 +456,28 @@ class RLockViewModel(
         _sideQuests.update { current ->
             (listOf(newQuest) + current).sortedBy { it.createdAt }
         }
+        persistData()
     }
 
     fun toggleSideQuest(id: String) {
         _sideQuests.update { current ->
             current.map { if (it.id == id) it.copy(isCompleted = !it.isCompleted) else it }
         }
+        persistData()
     }
 
     fun deleteSideQuest(id: String) {
         _sideQuests.update { current ->
             current.filter { it.id != id }
         }
+        persistData()
     }
 
     fun clearCompletedSideQuests() {
         _sideQuests.update { current ->
             current.filter { !it.isCompleted }
         }
+        persistData()
     }
 
     fun exportBackupJson(): String {
@@ -424,10 +495,12 @@ class RLockViewModel(
         return try {
             val backup = gson.fromJson(jsonString, RLockBackupData::class.java)
             if (backup != null) {
-                repository.resetData(backup.categories, backup.blockTemplates, backup.metricGoals)
+                _categories.value = backup.categories
+                _templates.value = backup.blockTemplates
                 _metrics.value = backup.metricGoals
                 _agendaBlocks.value = backup.activeAgenda
                 _sideQuests.value = backup.sideQuests
+                persistData()
                 true
             } else {
                 false
@@ -439,10 +512,12 @@ class RLockViewModel(
     }
 
     fun clearAllData() {
-        repository.clearAllData()
+        _categories.value = listOf(CustomCategory.GENERAL)
+        _templates.value = emptyList()
         _metrics.value = emptyList()
         _agendaBlocks.value = emptyList()
         _sideQuests.value = emptyList()
+        persistData()
     }
 
     fun loadStarterTemplate() {
@@ -513,9 +588,11 @@ class RLockViewModel(
             MetricGoal(name = "Appointments", target = 5)
         )
 
-        repository.resetData(starterCategories, starterTemplates, starterMetrics)
+        _categories.value = starterCategories
+        _templates.value = starterTemplates
         _metrics.value = starterMetrics
-        _agendaBlocks.value = repository.generateTodayAgenda()
+        resetTodayToDefaults()
         _sideQuests.value = emptyList()
+        persistData()
     }
 }

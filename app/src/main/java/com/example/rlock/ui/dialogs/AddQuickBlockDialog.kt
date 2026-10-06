@@ -1,9 +1,12 @@
 package com.example.rlock.ui.dialogs
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -15,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -34,8 +38,10 @@ import com.example.rlock.ui.theme.CrimsonAccent
 import com.example.rlock.ui.theme.CrimsonBorder
 import com.example.rlock.ui.theme.CrimsonTextPrimary
 import com.example.rlock.ui.theme.CrimsonTextSecondary
+import com.example.rlock.ui.theme.GlassCrimson
 import com.example.rlock.ui.theme.GlassDialogBg
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,49 +58,80 @@ fun AddQuickBlockDialog(
         fallbackEnd: LocalTime?
     ) -> Unit
 ) {
-    var title by remember { mutableStateOf("") }
     var category by remember {
         mutableStateOf(categories.firstOrNull { it.id != "appointment" } ?: CustomCategory.ROUTINE)
     }
-    var startHour by remember { mutableStateOf("14") }
-    var startMin by remember { mutableStateOf("0") }
-    var endHour by remember { mutableStateOf("15") }
-    var endMin by remember { mutableStateOf("0") }
+    var title by remember { mutableStateOf(category.name) }
+    var startTime by remember { mutableStateOf(LocalTime.of(14, 0)) }
+    var endTime by remember { mutableStateOf(LocalTime.of(15, 0)) }
 
     var shiftable by remember { mutableStateOf(false) }
-    var fallbackStartHour by remember { mutableStateOf("19") }
-    var fallbackStartMin by remember { mutableStateOf("0") }
-    var fallbackEndHour by remember { mutableStateOf("20") }
-    var fallbackEndMin by remember { mutableStateOf("0") }
+    var fallbackStartTime by remember { mutableStateOf(LocalTime.of(19, 0)) }
+    var fallbackEndTime by remember { mutableStateOf(LocalTime.of(20, 0)) }
 
     var categoryExpanded by remember { mutableStateOf(false) }
+
+    var showStartPicker by remember { mutableStateOf(false) }
+    var showEndPicker by remember { mutableStateOf(false) }
+    var showFallbackStartPicker by remember { mutableStateOf(false) }
+    var showFallbackEndPicker by remember { mutableStateOf(false) }
+
+    if (showStartPicker) {
+        RLockTimePickerDialog(
+            initialTime = startTime,
+            onTimeSelected = {
+                startTime = it
+                showStartPicker = false
+            },
+            onDismiss = { showStartPicker = false }
+        )
+    }
+
+    if (showEndPicker) {
+        RLockTimePickerDialog(
+            initialTime = endTime,
+            onTimeSelected = {
+                endTime = it
+                showEndPicker = false
+            },
+            onDismiss = { showEndPicker = false }
+        )
+    }
+
+    if (showFallbackStartPicker) {
+        RLockTimePickerDialog(
+            initialTime = fallbackStartTime,
+            onTimeSelected = {
+                fallbackStartTime = it
+                showFallbackStartPicker = false
+            },
+            onDismiss = { showFallbackStartPicker = false }
+        )
+    }
+
+    if (showFallbackEndPicker) {
+        RLockTimePickerDialog(
+            initialTime = fallbackEndTime,
+            onTimeSelected = {
+                fallbackEndTime = it
+                showFallbackEndPicker = false
+            },
+            onDismiss = { showFallbackEndPicker = false }
+        )
+    }
 
     AlertDialog(
         containerColor = GlassDialogBg,
         titleContentColor = CrimsonTextPrimary,
         textContentColor = CrimsonTextSecondary,
         onDismissRequest = onDismiss,
-        title = { Text("Quick Add One-Off Block") },
+        title = { Text("Quick Add Agenda Block") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = "Adds a one-time block to today's schedule without altering default templates.",
+                    text = "Select or enter a block title/category and emoji to add to today's schedule.",
                     style = MaterialTheme.typography.bodySmall,
                     color = CrimsonTextSecondary
-                )
-
-                OutlinedTextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text("Block Title", color = CrimsonTextSecondary) },
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = CrimsonAccent,
-                        unfocusedBorderColor = CrimsonBorder,
-                        focusedTextColor = CrimsonTextPrimary,
-                        unfocusedTextColor = CrimsonTextPrimary
-                    ),
-                    modifier = Modifier.fillMaxWidth()
                 )
 
                 // Category Dropdown
@@ -106,7 +143,7 @@ fun AddQuickBlockDialog(
                         value = "${category.emoji} ${category.name}",
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Category", color = CrimsonTextSecondary) },
+                        label = { Text("Select Category / Title", color = CrimsonTextSecondary) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = CrimsonAccent,
@@ -127,6 +164,7 @@ fun AddQuickBlockDialog(
                                 text = { Text("${cat.emoji} ${cat.name}", color = CrimsonTextPrimary) },
                                 onClick = {
                                     category = cat
+                                    title = cat.name
                                     categoryExpanded = false
                                 }
                             )
@@ -134,61 +172,36 @@ fun AddQuickBlockDialog(
                     }
                 }
 
+                // Block Title Text Field (Pre-filled with category name, editable)
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Block Title", color = CrimsonTextSecondary) },
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = CrimsonAccent,
+                        unfocusedBorderColor = CrimsonBorder,
+                        focusedTextColor = CrimsonTextPrimary,
+                        unfocusedTextColor = CrimsonTextPrimary
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
                 Text("Start Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = CrimsonTextPrimary)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = startHour,
-                        onValueChange = { startHour = it },
-                        label = { Text("Start Hr", color = CrimsonTextSecondary) },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CrimsonAccent,
-                            unfocusedBorderColor = CrimsonBorder,
-                            focusedTextColor = CrimsonTextPrimary,
-                            unfocusedTextColor = CrimsonTextPrimary
-                        ),
-                        modifier = Modifier.weight(1f)
-                    )
-                    OutlinedTextField(
-                        value = startMin,
-                        onValueChange = { startMin = it },
-                        label = { Text("Min", color = CrimsonTextSecondary) },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CrimsonAccent,
-                            unfocusedBorderColor = CrimsonBorder,
-                            focusedTextColor = CrimsonTextPrimary,
-                            unfocusedTextColor = CrimsonTextPrimary
-                        ),
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                TimeChip(
+                    label = "Start Time",
+                    time = startTime,
+                    onClick = { showStartPicker = true },
+                    modifier = Modifier.fillMaxWidth()
+                )
 
                 Text("End Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = CrimsonTextPrimary)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = endHour,
-                        onValueChange = { endHour = it },
-                        label = { Text("End Hr", color = CrimsonTextSecondary) },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CrimsonAccent,
-                            unfocusedBorderColor = CrimsonBorder,
-                            focusedTextColor = CrimsonTextPrimary,
-                            unfocusedTextColor = CrimsonTextPrimary
-                        ),
-                        modifier = Modifier.weight(1f)
-                    )
-                    OutlinedTextField(
-                        value = endMin,
-                        onValueChange = { endMin = it },
-                        label = { Text("Min", color = CrimsonTextSecondary) },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CrimsonAccent,
-                            unfocusedBorderColor = CrimsonBorder,
-                            focusedTextColor = CrimsonTextPrimary,
-                            unfocusedTextColor = CrimsonTextPrimary
-                        ),
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                TimeChip(
+                    label = "End Time",
+                    time = endTime,
+                    onClick = { showEndPicker = true },
+                    modifier = Modifier.fillMaxWidth()
+                )
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -207,98 +220,42 @@ fun AddQuickBlockDialog(
                 }
 
                 if (shiftable) {
-                    Text("Fallback Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = CrimsonTextPrimary)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedTextField(
-                            value = fallbackStartHour,
-                            onValueChange = { fallbackStartHour = it },
-                            label = { Text("Start Hr", color = CrimsonTextSecondary) },
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = CrimsonAccent,
-                                unfocusedBorderColor = CrimsonBorder,
-                                focusedTextColor = CrimsonTextPrimary,
-                                unfocusedTextColor = CrimsonTextPrimary
-                            ),
-                            modifier = Modifier.weight(1f)
-                        )
-                        OutlinedTextField(
-                            value = fallbackStartMin,
-                            onValueChange = { fallbackStartMin = it },
-                            label = { Text("Min", color = CrimsonTextSecondary) },
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = CrimsonAccent,
-                                unfocusedBorderColor = CrimsonBorder,
-                                focusedTextColor = CrimsonTextPrimary,
-                                unfocusedTextColor = CrimsonTextPrimary
-                            ),
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedTextField(
-                            value = fallbackEndHour,
-                            onValueChange = { fallbackEndHour = it },
-                            label = { Text("End Hr", color = CrimsonTextSecondary) },
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = CrimsonAccent,
-                                unfocusedBorderColor = CrimsonBorder,
-                                focusedTextColor = CrimsonTextPrimary,
-                                unfocusedTextColor = CrimsonTextPrimary
-                            ),
-                            modifier = Modifier.weight(1f)
-                        )
-                        OutlinedTextField(
-                            value = fallbackEndMin,
-                            onValueChange = { fallbackEndMin = it },
-                            label = { Text("Min", color = CrimsonTextSecondary) },
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = CrimsonAccent,
-                                unfocusedBorderColor = CrimsonBorder,
-                                focusedTextColor = CrimsonTextPrimary,
-                                unfocusedTextColor = CrimsonTextPrimary
-                            ),
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
+                    Text("Fallback Start Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = CrimsonTextPrimary)
+                    TimeChip(
+                        label = "Fallback Start",
+                        time = fallbackStartTime,
+                        onClick = { showFallbackStartPicker = true },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Text("Fallback End Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = CrimsonTextPrimary)
+                    TimeChip(
+                        label = "Fallback End",
+                        time = fallbackEndTime,
+                        onClick = { showFallbackEndPicker = true },
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
         },
         confirmButton = {
             Button(
                 onClick = {
-                    val sHr = startHour.toIntOrNull()?.coerceIn(0, 23) ?: 14
-                    val sMn = startMin.toIntOrNull()?.coerceIn(0, 59) ?: 0
-                    val eHr = endHour.toIntOrNull()?.coerceIn(0, 23) ?: 15
-                    val eMn = endMin.toIntOrNull()?.coerceIn(0, 59) ?: 0
-
-                    val startTime = LocalTime.of(sHr, sMn)
-                    val endTime = LocalTime.of(eHr, eMn)
-
-                    var fbStart: LocalTime? = null
-                    var fbEnd: LocalTime? = null
-
-                    if (shiftable) {
-                        val fsHr = fallbackStartHour.toIntOrNull()?.coerceIn(0, 23) ?: 19
-                        val fsMn = fallbackStartMin.toIntOrNull()?.coerceIn(0, 59) ?: 0
-                        val feHr = fallbackEndHour.toIntOrNull()?.coerceIn(0, 23) ?: 20
-                        val feMn = fallbackEndMin.toIntOrNull()?.coerceIn(0, 59) ?: 0
-                        fbStart = LocalTime.of(fsHr, fsMn)
-                        fbEnd = LocalTime.of(feHr, feMn)
-                    }
-
+                    val finalTitle = title.ifBlank { category.name }
+                    val updatedCategory = category.copy(name = finalTitle)
                     onConfirm(
-                        title.ifBlank { "Quick Task" },
-                        category,
+                        finalTitle,
+                        updatedCategory,
                         startTime,
                         endTime,
                         shiftable,
-                        fbStart,
-                        fbEnd
+                        if (shiftable) fallbackStartTime else null,
+                        if (shiftable) fallbackEndTime else null
                     )
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = CrimsonAccent, contentColor = Color.White)
             ) {
-                Text("Add Quick Block", fontWeight = FontWeight.Bold)
+                Text("Add Agenda Block", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
@@ -307,4 +264,34 @@ fun AddQuickBlockDialog(
             }
         }
     )
+}
+
+@Composable
+private fun TimeChip(
+    label: String,
+    time: LocalTime,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        color = GlassCrimson,
+        border = BorderStroke(1.dp, CrimsonBorder),
+        modifier = modifier
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(label, style = MaterialTheme.typography.bodyMedium, color = CrimsonTextSecondary)
+            Text(
+                text = time.format(DateTimeFormatter.ofPattern("h:mm a")),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = CrimsonAccent
+            )
+        }
+    }
 }

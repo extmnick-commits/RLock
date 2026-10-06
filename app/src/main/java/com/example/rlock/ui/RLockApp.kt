@@ -46,6 +46,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FloatingActionButton
 import com.example.rlock.ui.components.AgendaList
 import com.example.rlock.ui.components.RLockSpeedDialFab
 import com.example.rlock.ui.components.ScorecardHeader
@@ -157,6 +160,14 @@ fun RLockApp(
                     )
                 }
             }
+        },
+        floatingActionButton = {
+            if (pagerState.currentPage == 0) {
+                RLockSpeedDialFab(
+                    onAddAppointmentClick = { showAddAppointmentDialog = true },
+                    onQuickAddBlockClick = { showAddQuickBlockDialog = true }
+                )
+            }
         }
     ) { paddingValues ->
         Box(
@@ -200,14 +211,6 @@ fun RLockApp(
                     // Side Quest Screen
                     SideQuestScreen(viewModel = viewModel)
                 }
-            }
-
-            if (pagerState.currentPage == 0) {
-                RLockSpeedDialFab(
-                    onAddAppointmentClick = { showAddAppointmentDialog = true },
-                    onQuickAddBlockClick = { showAddQuickBlockDialog = true },
-                    modifier = Modifier.align(Alignment.BottomEnd)
-                )
             }
         }
     }
@@ -285,40 +288,47 @@ fun ScorecardBottomSheetContent(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Metrics Checklist
-        metrics.forEach { metric ->
-            val isCompleted = metric.current >= metric.target
-            ScorecardChecklistRow(
-                text = "${metric.target} ${metric.name}",
-                isCompleted = isCompleted
+        if (metrics.isEmpty() && agendaBlocks.isEmpty()) {
+            Text(
+                text = "No goals or agenda blocks scheduled for today.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = CrimsonTextSecondary,
+                modifier = Modifier.padding(vertical = 12.dp)
             )
+        } else {
+            // Metrics Checklist
+            metrics.forEach { metric ->
+                val isCompleted = metric.current >= metric.target
+                ScorecardChecklistRow(
+                    text = "${metric.name} (${metric.current}/${metric.target})",
+                    isCompleted = isCompleted
+                )
+            }
+
+            // Dynamic Agenda Blocks Checklist
+            agendaBlocks.forEach { block ->
+                val baseTitle = block.title.ifBlank { block.categoryName.ifBlank { "General Block" } }
+                val isAppt = block.categoryId == "appointment"
+                val rawLabel = if (isAppt && !baseTitle.contains("appointment", ignoreCase = true)) {
+                    "$baseTitle appointment"
+                } else {
+                    baseTitle
+                }
+                val textLabel = if (rawLabel.contains("completed", ignoreCase = true)) {
+                    rawLabel
+                } else {
+                    "$rawLabel completed"
+                }
+                val subtaskProgress = if (block.subtasks.isNotEmpty()) {
+                    " (${block.subtasks.count { it.isCompleted }}/${block.subtasks.size})"
+                } else ""
+
+                ScorecardChecklistRow(
+                    text = "$textLabel$subtaskProgress",
+                    isCompleted = block.isCompleted
+                )
+            }
         }
-
-        // Specific Blocks Checklist
-        val studyCompleted = agendaBlocks.any { it.title.contains("Series 26", ignoreCase = true) && it.isCompleted }
-        ScorecardChecklistRow(
-            text = "Series 26 study completed",
-            isCompleted = studyCompleted
-        )
-
-        val maintenanceCompleted = agendaBlocks.any { it.title.contains("Property maintenance", ignoreCase = true) && it.isCompleted }
-        ScorecardChecklistRow(
-            text = "Property maintenance completed",
-            isCompleted = maintenanceCompleted
-        )
-
-        val appointments = agendaBlocks.filter { it.categoryId == "appointment" }
-        val allApptsCompleted = appointments.isNotEmpty() && appointments.all { it.isCompleted }
-        ScorecardChecklistRow(
-            text = "All scheduled appointments completed",
-            isCompleted = allApptsCompleted
-        )
-
-        val followupsCompleted = agendaBlocks.any { it.title.contains("follow-up", ignoreCase = true) && it.isCompleted }
-        ScorecardChecklistRow(
-            text = "Follow-ups completed",
-            isCompleted = followupsCompleted
-        )
 
         Spacer(modifier = Modifier.height(32.dp))
     }

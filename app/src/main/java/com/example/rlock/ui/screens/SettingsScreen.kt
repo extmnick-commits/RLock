@@ -30,6 +30,7 @@ import com.example.rlock.model.BlockTemplate
 import com.example.rlock.model.CustomCategory
 import com.example.rlock.model.MetricGoal
 import com.example.rlock.ui.RLockViewModel
+import com.example.rlock.ui.dialogs.RLockTimePickerDialog
 import com.example.rlock.ui.theme.*
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -619,13 +620,6 @@ private fun TemplateGlassCard(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = template.title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimaryTeal
-            )
-            Spacer(modifier = Modifier.height(4.dp))
             
             Text(
                 text = "${formatTime(template.defaultStart)} - ${formatTime(template.defaultEnd)}",
@@ -732,26 +726,70 @@ private fun TemplateEditDialog(
     onDismiss: () -> Unit,
     onSave: (BlockTemplate) -> Unit
 ) {
-    var title by remember { mutableStateOf(template?.title ?: "") }
     var selectedCategory by remember { 
         mutableStateOf(categories.find { it.id == template?.categoryId } ?: categories.firstOrNull() ?: CustomCategory.GENERAL) 
     }
     
-    var startHour by remember { mutableStateOf(template?.defaultStart?.hour?.toString() ?: "9") }
-    var startMin by remember { mutableStateOf(template?.defaultStart?.minute?.toString() ?: "0") }
-    var endHour by remember { mutableStateOf(template?.defaultEnd?.hour?.toString() ?: "10") }
-    var endMin by remember { mutableStateOf(template?.defaultEnd?.minute?.toString() ?: "0") }
+    var defaultStart by remember { mutableStateOf(template?.defaultStart ?: LocalTime.of(9, 0)) }
+    var defaultEnd by remember { mutableStateOf(template?.defaultEnd ?: LocalTime.of(10, 0)) }
 
     var shiftable by remember { mutableStateOf(template?.shiftable ?: false) }
-    var fallbackStartHour by remember { mutableStateOf(template?.fallbackStartTime?.hour?.toString() ?: "20") }
-    var fallbackStartMin by remember { mutableStateOf(template?.fallbackStartTime?.minute?.toString() ?: "0") }
-    var fallbackEndHour by remember { mutableStateOf(template?.fallbackEndTime?.hour?.toString() ?: "22") }
-    var fallbackEndMin by remember { mutableStateOf(template?.fallbackEndTime?.minute?.toString() ?: "0") }
+    var fallbackStart by remember { mutableStateOf(template?.fallbackStartTime ?: LocalTime.of(20, 0)) }
+    var fallbackEnd by remember { mutableStateOf(template?.fallbackEndTime ?: LocalTime.of(22, 0)) }
 
     var isNotificationEnabled by remember { mutableStateOf(template?.isNotificationEnabled ?: false) }
     var subtasksList by remember { mutableStateOf(template?.subtasks?.joinToString(",") { it.name } ?: "") }
 
     var categoryExpanded by remember { mutableStateOf(false) }
+
+    var showStartPicker by remember { mutableStateOf(false) }
+    var showEndPicker by remember { mutableStateOf(false) }
+    var showFallbackStartPicker by remember { mutableStateOf(false) }
+    var showFallbackEndPicker by remember { mutableStateOf(false) }
+
+    if (showStartPicker) {
+        RLockTimePickerDialog(
+            initialTime = defaultStart,
+            onTimeSelected = {
+                defaultStart = it
+                showStartPicker = false
+            },
+            onDismiss = { showStartPicker = false }
+        )
+    }
+
+    if (showEndPicker) {
+        RLockTimePickerDialog(
+            initialTime = defaultEnd,
+            onTimeSelected = {
+                defaultEnd = it
+                showEndPicker = false
+            },
+            onDismiss = { showEndPicker = false }
+        )
+    }
+
+    if (showFallbackStartPicker) {
+        RLockTimePickerDialog(
+            initialTime = fallbackStart,
+            onTimeSelected = {
+                fallbackStart = it
+                showFallbackStartPicker = false
+            },
+            onDismiss = { showFallbackStartPicker = false }
+        )
+    }
+
+    if (showFallbackEndPicker) {
+        RLockTimePickerDialog(
+            initialTime = fallbackEnd,
+            onTimeSelected = {
+                fallbackEnd = it
+                showFallbackEndPicker = false
+            },
+            onDismiss = { showFallbackEndPicker = false }
+        )
+    }
 
     AlertDialog(
         containerColor = GlassDialogBg,
@@ -761,14 +799,6 @@ private fun TemplateEditDialog(
         title = { Text(if (template == null) "Add Block Template" else "Edit Block Template") },
         text = {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                item {
-                    GlassTextField(
-                        value = title,
-                        onValueChange = { title = it },
-                        label = "Title"
-                    )
-                }
-
                 // Category Dropdown
                 item {
                     ExposedDropdownMenuBox(
@@ -811,14 +841,49 @@ private fun TemplateEditDialog(
 
                 item {
                     Text("Default Schedule Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = TextPrimaryTeal)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        GlassTextField(value = startHour, onValueChange = { startHour = it }, label = "Start Hr", modifier = Modifier.weight(1f))
-                        GlassTextField(value = startMin, onValueChange = { startMin = it }, label = "Min", modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Surface(
+                        onClick = { showStartPicker = true },
+                        shape = RoundedCornerShape(12.dp),
+                        color = GlassCrimson,
+                        border = BorderStroke(1.dp, GlassCardBorderColor),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Start Time", style = MaterialTheme.typography.bodyMedium, color = TextMutedTeal)
+                            Text(
+                                text = defaultStart.format(DateTimeFormatter.ofPattern("h:mm a")),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = CyanAccent
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        GlassTextField(value = endHour, onValueChange = { endHour = it }, label = "End Hr", modifier = Modifier.weight(1f))
-                        GlassTextField(value = endMin, onValueChange = { endMin = it }, label = "Min", modifier = Modifier.weight(1f))
+                    Surface(
+                        onClick = { showEndPicker = true },
+                        shape = RoundedCornerShape(12.dp),
+                        color = GlassCrimson,
+                        border = BorderStroke(1.dp, GlassCardBorderColor),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("End Time", style = MaterialTheme.typography.bodyMedium, color = TextMutedTeal)
+                            Text(
+                                text = defaultEnd.format(DateTimeFormatter.ofPattern("h:mm a")),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = CyanAccent
+                            )
+                        }
                     }
                 }
 
@@ -843,14 +908,49 @@ private fun TemplateEditDialog(
                 if (shiftable) {
                     item {
                         Text("Fallback Slot Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = TextPrimaryTeal)
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            GlassTextField(value = fallbackStartHour, onValueChange = { fallbackStartHour = it }, label = "Start Hr", modifier = Modifier.weight(1f))
-                            GlassTextField(value = fallbackStartMin, onValueChange = { fallbackStartMin = it }, label = "Min", modifier = Modifier.weight(1f))
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Surface(
+                            onClick = { showFallbackStartPicker = true },
+                            shape = RoundedCornerShape(12.dp),
+                            color = GlassCrimson,
+                            border = BorderStroke(1.dp, GlassCardBorderColor),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Fallback Start", style = MaterialTheme.typography.bodyMedium, color = TextMutedTeal)
+                                Text(
+                                    text = fallbackStart.format(DateTimeFormatter.ofPattern("h:mm a")),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = CyanAccent
+                                )
+                            }
                         }
                         Spacer(modifier = Modifier.height(8.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            GlassTextField(value = fallbackEndHour, onValueChange = { fallbackEndHour = it }, label = "End Hr", modifier = Modifier.weight(1f))
-                            GlassTextField(value = fallbackEndMin, onValueChange = { fallbackEndMin = it }, label = "Min", modifier = Modifier.weight(1f))
+                        Surface(
+                            onClick = { showFallbackEndPicker = true },
+                            shape = RoundedCornerShape(12.dp),
+                            color = GlassCrimson,
+                            border = BorderStroke(1.dp, GlassCardBorderColor),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Fallback End", style = MaterialTheme.typography.bodyMedium, color = TextMutedTeal)
+                                Text(
+                                    text = fallbackEnd.format(DateTimeFormatter.ofPattern("h:mm a")),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = CyanAccent
+                                )
+                            }
                         }
                     }
                 }
@@ -884,36 +984,16 @@ private fun TemplateEditDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    val sHr = startHour.toIntOrNull()?.coerceIn(0, 23) ?: 9
-                    val sMn = startMin.toIntOrNull()?.coerceIn(0, 59) ?: 0
-                    val eHr = endHour.toIntOrNull()?.coerceIn(0, 23) ?: 10
-                    val eMn = endMin.toIntOrNull()?.coerceIn(0, 59) ?: 0
-
-                    val defStart = LocalTime.of(sHr, sMn)
-                    val defEnd = LocalTime.of(eHr, eMn)
-
-                    var fbStart: LocalTime? = null
-                    var fbEnd: LocalTime? = null
-
-                    if (shiftable) {
-                        val fsHr = fallbackStartHour.toIntOrNull()?.coerceIn(0, 23) ?: 20
-                        val fsMn = fallbackStartMin.toIntOrNull()?.coerceIn(0, 59) ?: 0
-                        val feHr = fallbackEndHour.toIntOrNull()?.coerceIn(0, 23) ?: 22
-                        val feMn = fallbackEndMin.toIntOrNull()?.coerceIn(0, 59) ?: 0
-                        fbStart = LocalTime.of(fsHr, fsMn)
-                        fbEnd = LocalTime.of(feHr, feMn)
-                    }
-
                     val newTemplate = BlockTemplate(
                         id = template?.id ?: java.util.UUID.randomUUID().toString(),
-                        title = title.ifBlank { "Untitled Block" },
+                        title = selectedCategory.name,
                         categoryId = selectedCategory.id,
                         categoryName = selectedCategory.name,
-                        defaultStart = defStart,
-                        defaultEnd = defEnd,
+                        defaultStart = defaultStart,
+                        defaultEnd = defaultEnd,
                         shiftable = shiftable,
-                        fallbackStartTime = fbStart,
-                        fallbackEndTime = fbEnd,
+                        fallbackStartTime = if (shiftable) fallbackStart else null,
+                        fallbackEndTime = if (shiftable) fallbackEnd else null,
                         isNotificationEnabled = isNotificationEnabled,
                         subtasks = subtasksList.split(",")
                             .map { it.trim() }
