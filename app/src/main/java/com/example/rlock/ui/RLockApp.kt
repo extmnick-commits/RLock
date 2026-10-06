@@ -218,8 +218,8 @@ fun RLockApp(
     if (showAddAppointmentDialog) {
         AddAppointmentDialog(
             onDismiss = { showAddAppointmentDialog = false },
-            onConfirm = { title, start, end ->
-                viewModel.addAppointment(title, start, end)
+            onConfirm = { emoji, title, start, end ->
+                viewModel.addAppointment(emoji, title, start, end)
                 showAddAppointmentDialog = false
             }
         )

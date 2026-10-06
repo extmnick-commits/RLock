@@ -117,8 +117,9 @@ fun AgendaBlockCard(
                 // Title and Time
                 Column(modifier = Modifier.weight(1f)) {
                     val category = categories.find { it.id == block.categoryId || it.name.equals(block.category, ignoreCase = true) }
-                    val categoryEmoji = category?.emoji ?: "📌"
-                    val categoryName = category?.name ?: block.categoryName.ifBlank { "General" }
+                    val isAppointmentBlock = isAppointment || block.categoryId.contains("appointment", ignoreCase = true) || block.categoryName.equals("Appointment", ignoreCase = true)
+                    val categoryEmoji = category?.emoji ?: if (isAppointmentBlock) "📅" else "📌"
+                    val categoryName = category?.name ?: block.categoryName.ifBlank { if (isAppointmentBlock) "Appointments" else "General" }
                     val categoryColor = category?.colorHex?.let { Color(it) } ?: CrimsonAccent
 
                     val displayLabel = if (block.title.isNotBlank() && block.title != "Untitled Block") {

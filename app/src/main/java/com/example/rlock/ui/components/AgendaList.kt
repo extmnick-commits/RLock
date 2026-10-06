@@ -61,7 +61,14 @@ fun AgendaList(
     } else {
         val groupedBlocks = blocks.groupBy { block ->
             val category = categories.find { it.id == block.categoryId || it.name.equals(block.category, ignoreCase = true) }
-            if (category != null) "${category.emoji} ${category.name}" else "📌 Other"
+            if (category != null) {
+                "${category.emoji} ${category.name}"
+            } else {
+                val isAppt = block.categoryId.contains("appointment", ignoreCase = true) || block.categoryName.equals("Appointment", ignoreCase = true)
+                val emoji = if (isAppt) "📅" else "📌"
+                val name = block.categoryName.ifBlank { if (isAppt) "Appointments" else "General" }
+                "$emoji $name"
+            }
         }
 
         LazyColumn(

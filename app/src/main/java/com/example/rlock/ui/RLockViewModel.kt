@@ -254,12 +254,29 @@ class RLockViewModel(
      * RLock Collision Engine
      * Inserts an appointment and resolves overlaps with existing blocks.
      */
-    fun addAppointment(title: String, start: LocalTime, end: LocalTime) {
+    fun addAppointment(emoji: String, title: String, start: LocalTime, end: LocalTime) {
+        val apptTitle = title.ifBlank { "Appointments" }
+        val categoryId = "appointment_${apptTitle.lowercase().replace(" ", "_")}"
+        val resolvedEmoji = emoji.ifBlank { "📅" }
+        val customCat = CustomCategory(
+            id = categoryId,
+            name = apptTitle,
+            emoji = resolvedEmoji,
+            colorHex = 0xFFFFC107
+        )
+        _categories.update { list ->
+            if (list.any { it.id == categoryId || it.name.equals(apptTitle, ignoreCase = true) }) {
+                list
+            } else {
+                list + customCat
+            }
+        }
+
         val newAppointment = AgendaBlock(
-            title = title,
-            section = "📅 Appointments & Prospecting",
-            categoryId = CustomCategory.APPOINTMENT.id,
-            categoryName = CustomCategory.APPOINTMENT.name,
+            title = apptTitle,
+            section = "$resolvedEmoji $apptTitle",
+            categoryId = categoryId,
+            categoryName = apptTitle,
             startTime = start,
             endTime = end,
         )
@@ -269,7 +286,7 @@ class RLockViewModel(
             updatedBlocks.add(newAppointment)
 
             for (block in currentBlocks) {
-                if (block.categoryId == CustomCategory.APPOINTMENT.id) {
+                if (block.categoryId == CustomCategory.APPOINTMENT.id || block.categoryId.contains("appointment", ignoreCase = true)) {
                     updatedBlocks.add(block)
                     continue
                 }

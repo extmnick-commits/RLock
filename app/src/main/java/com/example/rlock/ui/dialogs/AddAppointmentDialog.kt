@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -38,9 +39,10 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun AddAppointmentDialog(
     onDismiss: () -> Unit,
-    onConfirm: (title: String, start: LocalTime, end: LocalTime) -> Unit
+    onConfirm: (emoji: String, title: String, start: LocalTime, end: LocalTime) -> Unit
 ) {
-    var title by remember { mutableStateOf("") }
+    var emoji by remember { mutableStateOf("📅") }
+    var title by remember { mutableStateOf("Appointments") }
     var startTime by remember { mutableStateOf(LocalTime.of(10, 0)) }
     var endTime by remember { mutableStateOf(LocalTime.of(11, 0)) }
 
@@ -83,19 +85,37 @@ fun AddAppointmentDialog(
                     color = CrimsonTextSecondary
                 )
 
-                OutlinedTextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text("Appointment Title", color = CrimsonTextSecondary) },
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = CrimsonAccent,
-                        unfocusedBorderColor = CrimsonBorder,
-                        focusedTextColor = CrimsonTextPrimary,
-                        unfocusedTextColor = CrimsonTextPrimary
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = emoji,
+                        onValueChange = { if (it.length <= 4) emoji = it },
+                        label = { Text("Emoji", color = CrimsonTextSecondary) },
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = CrimsonAccent,
+                            unfocusedBorderColor = CrimsonBorder,
+                            focusedTextColor = CrimsonTextPrimary,
+                            unfocusedTextColor = CrimsonTextPrimary
+                        ),
+                        modifier = Modifier.width(80.dp)
+                    )
+                    OutlinedTextField(
+                        value = title,
+                        onValueChange = { title = it },
+                        label = { Text("Appointments", color = CrimsonTextSecondary) },
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = CrimsonAccent,
+                            unfocusedBorderColor = CrimsonBorder,
+                            focusedTextColor = CrimsonTextPrimary,
+                            unfocusedTextColor = CrimsonTextPrimary
+                        ),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
 
                 Text("Start Time:", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = CrimsonTextPrimary)
                 TimeChip(
@@ -118,7 +138,8 @@ fun AddAppointmentDialog(
             Button(
                 onClick = {
                     onConfirm(
-                        title.ifBlank { "Client Appointment" },
+                        emoji.ifBlank { "📅" },
+                        title.ifBlank { "Appointments" },
                         startTime,
                         endTime
                     )
