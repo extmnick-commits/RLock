@@ -24,81 +24,32 @@ interface TemplateRepository {
     fun updateTemplate(template: BlockTemplate)
     fun addTemplate(template: BlockTemplate)
     fun deleteTemplate(templateId: String)
+    fun resetData(categories: List<CustomCategory>, templates: List<BlockTemplate>, metrics: List<MetricGoal>)
+    fun clearAllData()
 }
 
 class InMemoryTemplateRepository : TemplateRepository {
 
-    private val _categories = MutableStateFlow<List<CustomCategory>>(CustomCategory.defaultCategories)
+    private val _categories = MutableStateFlow<List<CustomCategory>>(listOf(CustomCategory.GENERAL))
     private val _templates = MutableStateFlow<List<BlockTemplate>>(emptyList())
     
-    private val defaultMetrics = listOf(
-        MetricGoal(name = "New Numbers", target = 10),
-        MetricGoal(name = "Calls", target = 25),
-        MetricGoal(name = "Appointments", target = 5)
-    )
+    private var currentMetrics = emptyList<MetricGoal>()
+    private val defaultMetrics = emptyList<MetricGoal>()
 
     init {
-        // Pre-populate with default templates using category id/name
-        _templates.value = listOf(
-            BlockTemplate(
-                title = "Property maintenance",
-                section = "🌅 Morning",
-                categoryId = CustomCategory.ROUTINE.id,
-                categoryName = CustomCategory.ROUTINE.name,
-                defaultStart = LocalTime.of(6, 0),
-                defaultEnd = LocalTime.of(8, 0),
-                subtasks = mutableListOf(
-                    Subtask(name = "Clean"),
-                    Subtask(name = "Yard work"),
-                    Subtask(name = "Property prep")
-                )
-            ),
-            BlockTemplate(
-                title = "Get ready / breakfast / reset",
-                section = "🌅 Morning",
-                categoryId = CustomCategory.ROUTINE.id,
-                categoryName = CustomCategory.ROUTINE.name,
-                defaultStart = LocalTime.of(8, 0),
-                defaultEnd = LocalTime.of(9, 0)
-            ),
-            BlockTemplate(
-                title = "Series 26 study",
-                section = "🌅 Morning",
-                categoryId = CustomCategory.STUDY.id,
-                categoryName = CustomCategory.STUDY.name,
-                defaultStart = LocalTime.of(9, 0),
-                defaultEnd = LocalTime.of(10, 0),
-                shiftable = true,
-                fallbackStartTime = LocalTime.of(20, 0),
-                fallbackEndTime = LocalTime.of(22, 0),
-                subtasks = mutableListOf(
-                    Subtask(name = "Complete study section"),
-                    Subtask(name = "QBank/practice questions"),
-                    Subtask(name = "Review missed questions")
-                )
-            ),
-            BlockTemplate(
-                title = "Standard Prospecting Block",
-                section = "📅 Appointments & Prospecting",
-                categoryId = CustomCategory.PROSPECTING.id,
-                categoryName = CustomCategory.PROSPECTING.name,
-                defaultStart = LocalTime.of(11, 30),
-                defaultEnd = LocalTime.of(16, 0),
-                subtasks = mutableListOf(
-                    Subtask(name = "Calls/texts/invites"),
-                    Subtask(name = "Follow-ups"),
-                    Subtask(name = "Set appointments")
-                )
-            ),
-            BlockTemplate(
-                title = "Calls/follow-up",
-                section = "🌆 Evening",
-                categoryId = CustomCategory.ROUTINE.id,
-                categoryName = CustomCategory.ROUTINE.name,
-                defaultStart = LocalTime.of(17, 0),
-                defaultEnd = LocalTime.of(18, 0)
-            )
-        )
+        // Start completely clean. No hardcoded templates or metrics.
+    }
+
+    override fun resetData(categories: List<CustomCategory>, templates: List<BlockTemplate>, metrics: List<MetricGoal>) {
+        _categories.value = categories
+        _templates.value = templates
+        currentMetrics = metrics
+    }
+
+    override fun clearAllData() {
+        _categories.value = listOf(CustomCategory.GENERAL)
+        _templates.value = emptyList()
+        currentMetrics = emptyList()
     }
 
     override fun getCategories(): Flow<List<CustomCategory>> = _categories.asStateFlow()
@@ -134,7 +85,7 @@ class InMemoryTemplateRepository : TemplateRepository {
 
     override fun getTemplates(): Flow<List<BlockTemplate>> = _templates.asStateFlow()
 
-    override fun getDefaultMetrics(): List<MetricGoal> = defaultMetrics
+    override fun getDefaultMetrics(): List<MetricGoal> = if (currentMetrics.isNotEmpty()) currentMetrics else defaultMetrics
 
     override fun generateTodayAgenda(): List<AgendaBlock> {
         return _templates.value.map { template ->

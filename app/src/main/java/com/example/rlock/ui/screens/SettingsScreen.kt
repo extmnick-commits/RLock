@@ -34,6 +34,13 @@ import com.example.rlock.ui.theme.*
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.launch
+import java.io.InputStreamReader
+import java.io.OutputStreamWriter
+
 val GlassCardContainer = GlassCrimson
 val GlassCardBorderColor = CrimsonBorder
 val SettingsCardShape = RoundedCornerShape(20.dp)
@@ -61,9 +68,64 @@ fun SettingsScreen(
     
     var morningResetTime by remember { mutableStateOf("04:00 AM") }
 
+    var showClearDataConfirmDialog by remember { mutableStateOf(false) }
+    var showLoadTemplateConfirmDialog by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        if (uri != null) {
+            try {
+                context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    OutputStreamWriter(outputStream).use { writer ->
+                        writer.write(viewModel.exportBackupJson())
+                    }
+                }
+                scope.launch {
+                    snackbarHostState.showSnackbar("Backup saved successfully.")
+                }
+            } catch (e: Exception) {
+                scope.launch {
+                    snackbarHostState.showSnackbar("Failed to save backup: ${e.localizedMessage}")
+                }
+            }
+        }
+    }
+
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            try {
+                val json = context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                    InputStreamReader(inputStream).readText()
+                }
+                if (json != null) {
+                    val success = viewModel.restoreFromBackupJson(json)
+                    scope.launch {
+                        if (success) {
+                            snackbarHostState.showSnackbar("Data restored successfully.")
+                        } else {
+                            snackbarHostState.showSnackbar("Failed to restore data.")
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                scope.launch {
+                    snackbarHostState.showSnackbar("Failed to load backup: ${e.localizedMessage}")
+                }
+            }
+        }
+    }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = DarkTealBg,
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -210,10 +272,117 @@ fun SettingsScreen(
                     }
                 }
             }
+
+            // SECTION E: DATA & BACKUP
+            item {
+                SectionHeader(title = "💾 Data & Backup", subtitle = "Manage your saved data")
+                Spacer(modifier = Modifier.height(12.dp))
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = SettingsCardShape,
+                    color = GlassCrimson,
+                    border = BorderStroke(1.dp, CrimsonBorder)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Button(
+                            onClick = { exportLauncher.launch("RLock_Backup.json") },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = CrimsonAccent, contentColor = CrimsonBackground),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("Save Data to File (Export)", fontWeight = FontWeight.Bold)
+                        }
+
+                        Button(
+                            onClick = { importLauncher.launch(arrayOf("application/json", "text/*")) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = GlassCrimsonHighlight, contentColor = CrimsonTextPrimary),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("Load Data from File (Import)", fontWeight = FontWeight.Bold)
+                        }
+
+                        Button(
+                            onClick = { showLoadTemplateConfirmDialog = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = GlassCrimsonHighlight, contentColor = CrimsonTextPrimary),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("Load Starter Template", fontWeight = FontWeight.Bold)
+                        }
+
+                        OutlinedButton(
+                            onClick = { showClearDataConfirmDialog = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("Clear All Data (Fresh Reset)", fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
         }
     }
 
     // Dialogs
+    if (showClearDataConfirmDialog) {
+        AlertDialog(
+            containerColor = GlassDialogBg,
+            titleContentColor = TextPrimaryTeal,
+            textContentColor = TextSecondaryTeal,
+            onDismissRequest = { showClearDataConfirmDialog = false },
+            title = { Text("Clear All Data") },
+            text = { Text("Are you sure? This will delete all cards, side quests, and goals. This cannot be undone.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.clearAllData()
+                        showClearDataConfirmDialog = false
+                        scope.launch { snackbarHostState.showSnackbar("All data cleared.") }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Delete Everything")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearDataConfirmDialog = false }) {
+                    Text("Cancel", color = TextMutedTeal)
+                }
+            }
+        )
+    }
+
+    if (showLoadTemplateConfirmDialog) {
+        AlertDialog(
+            containerColor = GlassDialogBg,
+            titleContentColor = TextPrimaryTeal,
+            textContentColor = TextSecondaryTeal,
+            onDismissRequest = { showLoadTemplateConfirmDialog = false },
+            title = { Text("Load Starter Template") },
+            text = { Text("This will overwrite your current settings with a standard daily blueprint. Are you sure?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.loadStarterTemplate()
+                        showLoadTemplateConfirmDialog = false
+                        scope.launch { snackbarHostState.showSnackbar("Starter template loaded.") }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = CyanAccent, contentColor = DarkTealBg)
+                ) {
+                    Text("Load Blueprint")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLoadTemplateConfirmDialog = false }) {
+                    Text("Cancel", color = TextMutedTeal)
+                }
+            }
+        )
+    }
+
     if (showAddTemplateDialog || editingTemplate != null) {
         TemplateEditDialog(
             template = editingTemplate,

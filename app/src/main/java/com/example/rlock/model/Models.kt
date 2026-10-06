@@ -87,3 +87,15 @@ data class SideQuest(
     val isCompleted: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )
+
+data class RLockBackupData(
+    val version: Int = 1,
+    val exportTimestamp: Long = System.currentTimeMillis(),
+    val categories: List<CustomCategory>,
+    val blockTemplates: List<BlockTemplate>,
+    val activeAgenda: List<AgendaBlock>,
+    val sideQuests: List<SideQuest>,
+    val metricGoals: List<MetricGoal>,
+    val morningResetHour: Int = 4,
+    val morningResetMinute: Int = 0
+)

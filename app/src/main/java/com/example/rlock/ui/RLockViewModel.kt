@@ -20,7 +20,38 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.util.UUID
+import com.example.rlock.model.RLockBackupData
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.TypeAdapter
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonWriter
+import android.util.Log
+
+val localTimeAdapter = object : TypeAdapter<LocalTime>() {
+    private val formatter = DateTimeFormatter.ISO_LOCAL_TIME
+    override fun write(out: JsonWriter, value: LocalTime?) {
+        if (value == null) {
+            out.nullValue()
+        } else {
+            out.value(value.format(formatter))
+        }
+    }
+    override fun read(inReader: JsonReader): LocalTime? {
+        if (inReader.peek() == com.google.gson.stream.JsonToken.NULL) {
+            inReader.nextNull()
+            return null
+        }
+        val str = inReader.nextString()
+        return if (str.isNullOrBlank()) null else LocalTime.parse(str, formatter)
+    }
+}
+
+val gson: Gson = GsonBuilder()
+    .registerTypeAdapter(LocalTime::class.java, localTimeAdapter)
+    .create()
 
 class RLockViewModel(
     private val repository: TemplateRepository
@@ -368,5 +399,115 @@ class RLockViewModel(
         _sideQuests.update { current ->
             current.filter { !it.isCompleted }
         }
+    }
+
+    fun exportBackupJson(): String {
+        val backup = RLockBackupData(
+            categories = categories.value,
+            blockTemplates = templates.value,
+            activeAgenda = _agendaBlocks.value,
+            sideQuests = _sideQuests.value,
+            metricGoals = _metrics.value
+        )
+        return gson.toJson(backup)
+    }
+
+    fun restoreFromBackupJson(jsonString: String): Boolean {
+        return try {
+            val backup = gson.fromJson(jsonString, RLockBackupData::class.java)
+            if (backup != null) {
+                repository.resetData(backup.categories, backup.blockTemplates, backup.metricGoals)
+                _metrics.value = backup.metricGoals
+                _agendaBlocks.value = backup.activeAgenda
+                _sideQuests.value = backup.sideQuests
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            Log.e("RLockViewModel", "Failed to restore from backup", e)
+            false
+        }
+    }
+
+    fun clearAllData() {
+        repository.clearAllData()
+        _metrics.value = emptyList()
+        _agendaBlocks.value = emptyList()
+        _sideQuests.value = emptyList()
+    }
+
+    fun loadStarterTemplate() {
+        val starterCategories = CustomCategory.defaultCategories
+        val starterTemplates = listOf(
+            BlockTemplate(
+                title = "Property maintenance",
+                section = "🌅 Morning",
+                categoryId = CustomCategory.ROUTINE.id,
+                categoryName = CustomCategory.ROUTINE.name,
+                defaultStart = LocalTime.of(6, 0),
+                defaultEnd = LocalTime.of(8, 0),
+                subtasks = mutableListOf(
+                    Subtask(name = "Clean"),
+                    Subtask(name = "Yard work"),
+                    Subtask(name = "Property prep")
+                )
+            ),
+            BlockTemplate(
+                title = "Get ready / breakfast / reset",
+                section = "🌅 Morning",
+                categoryId = CustomCategory.ROUTINE.id,
+                categoryName = CustomCategory.ROUTINE.name,
+                defaultStart = LocalTime.of(8, 0),
+                defaultEnd = LocalTime.of(9, 0)
+            ),
+            BlockTemplate(
+                title = "Series 26 study",
+                section = "🌅 Morning",
+                categoryId = CustomCategory.STUDY.id,
+                categoryName = CustomCategory.STUDY.name,
+                defaultStart = LocalTime.of(9, 0),
+                defaultEnd = LocalTime.of(10, 0),
+                shiftable = true,
+                fallbackStartTime = LocalTime.of(20, 0),
+                fallbackEndTime = LocalTime.of(22, 0),
+                subtasks = mutableListOf(
+                    Subtask(name = "Complete study section"),
+                    Subtask(name = "QBank/practice questions"),
+                    Subtask(name = "Review missed questions")
+                )
+            ),
+            BlockTemplate(
+                title = "Standard Prospecting Block",
+                section = "📅 Appointments & Prospecting",
+                categoryId = CustomCategory.PROSPECTING.id,
+                categoryName = CustomCategory.PROSPECTING.name,
+                defaultStart = LocalTime.of(11, 30),
+                defaultEnd = LocalTime.of(16, 0),
+                subtasks = mutableListOf(
+                    Subtask(name = "Calls/texts/invites"),
+                    Subtask(name = "Follow-ups"),
+                    Subtask(name = "Set appointments")
+                )
+            ),
+            BlockTemplate(
+                title = "Calls/follow-up",
+                section = "🌆 Evening",
+                categoryId = CustomCategory.ROUTINE.id,
+                categoryName = CustomCategory.ROUTINE.name,
+                defaultStart = LocalTime.of(17, 0),
+                defaultEnd = LocalTime.of(18, 0)
+            )
+        )
+        val starterMetrics = listOf(
+            MetricGoal(name = "New Numbers", target = 10),
+            MetricGoal(name = "Calls", target = 25),
+            MetricGoal(name = "Appointments", target = 5)
+        )
+
+        repository.resetData(starterCategories, starterTemplates, starterMetrics)
+        _metrics.value = starterMetrics
+        _agendaBlocks.value = repository.generateTodayAgenda()
+        _sideQuests.value = emptyList()
     }
 }
