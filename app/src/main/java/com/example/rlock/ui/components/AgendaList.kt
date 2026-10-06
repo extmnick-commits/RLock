@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.rlock.model.AgendaBlock
+import com.example.rlock.model.CustomCategory
 import com.example.rlock.ui.theme.CrimsonAccent
 import com.example.rlock.ui.theme.CrimsonBackground
 import com.example.rlock.ui.theme.CrimsonBorder
@@ -35,6 +36,7 @@ import com.example.rlock.ui.theme.GlassCrimson
 @Composable
 fun AgendaList(
     blocks: List<AgendaBlock>,
+    categories: List<CustomCategory> = emptyList(),
     onToggleCompletion: (String) -> Unit,
     onToggleSubtask: (String, String) -> Unit,
     onAddSubtask: (String, String) -> Unit,
@@ -57,7 +59,10 @@ fun AgendaList(
             )
         }
     } else {
-        val groupedBlocks = blocks.groupBy { it.section }
+        val groupedBlocks = blocks.groupBy { block ->
+            val category = categories.find { it.id == block.categoryId || it.name.equals(block.category, ignoreCase = true) }
+            if (category != null) "${category.emoji} ${category.name}" else "📌 Other"
+        }
 
         LazyColumn(
             modifier = modifier.fillMaxSize(),
@@ -69,8 +74,7 @@ fun AgendaList(
             ),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            groupedBlocks.forEach { (section, sectionBlocks) ->
-                val headerTitle = section.ifEmpty { "Other" }
+            groupedBlocks.forEach { (sectionHeader, sectionBlocks) ->
                 stickyHeader {
                     Surface(
                         color = CrimsonBackground.copy(alpha = 0.95f),
@@ -78,7 +82,7 @@ fun AgendaList(
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
                     ) {
-                        SectionHeaderRow(sectionName = headerTitle)
+                        SectionHeaderRow(sectionHeader = sectionHeader)
                     }
                 }
 
@@ -88,6 +92,7 @@ fun AgendaList(
                 ) { block ->
                     AgendaBlockCard(
                         block = block,
+                        categories = categories,
                         onToggleCompletion = onToggleCompletion,
                         onToggleSubtask = onToggleSubtask,
                         onAddSubtask = onAddSubtask
@@ -124,22 +129,15 @@ fun AgendaList(
 
 @Composable
 private fun SectionHeaderRow(
-    sectionName: String,
+    sectionHeader: String,
     modifier: Modifier = Modifier
 ) {
-    val icon = when {
-        sectionName.contains("Morning", ignoreCase = true) -> "🌅"
-        sectionName.contains("Appointment", ignoreCase = true) || sectionName.contains("Prospecting", ignoreCase = true) -> "📅"
-        sectionName.contains("Evening", ignoreCase = true) -> "🌆"
-        else -> "📌"
-    }
-
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "$icon $sectionName",
+            text = sectionHeader,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = CrimsonTextPrimary

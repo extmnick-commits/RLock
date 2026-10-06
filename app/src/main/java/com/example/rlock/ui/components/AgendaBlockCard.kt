@@ -27,13 +27,14 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import com.example.rlock.model.CustomCategory
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -71,7 +72,8 @@ fun AgendaBlockCard(
     onToggleCompletion: (String) -> Unit,
     onToggleSubtask: (String, String) -> Unit,
     onAddSubtask: (String, String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    categories: List<CustomCategory> = emptyList()
 ) {
     val isAppointment = block.categoryId == "appointment"
     val isCompleted = block.isCompleted
@@ -131,6 +133,27 @@ fun AgendaBlockCard(
                             fontWeight = if (isAppointment) FontWeight.Bold else FontWeight.Medium,
                             color = if (isCompleted) CrimsonTextSecondary else CrimsonTextPrimary,
                             textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None
+                        )
+                    }
+
+                    // Category Badge Chip
+                    val category = categories.find { it.id == block.categoryId || it.name.equals(block.category, ignoreCase = true) }
+                    val categoryEmoji = category?.emoji ?: "📌"
+                    val categoryName = category?.name ?: block.categoryName.ifBlank { "General" }
+                    val categoryColor = category?.colorHex?.let { Color(it) } ?: CrimsonAccent
+
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = categoryColor.copy(alpha = 0.15f),
+                        border = BorderStroke(1.dp, categoryColor.copy(alpha = 0.3f)),
+                        modifier = Modifier.padding(top = 4.dp)
+                    ) {
+                        Text(
+                            text = "$categoryEmoji $categoryName",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = categoryColor,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }
 

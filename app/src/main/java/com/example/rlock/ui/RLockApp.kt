@@ -47,7 +47,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.example.rlock.ui.components.AgendaList
+import com.example.rlock.ui.components.RLockSpeedDialFab
 import com.example.rlock.ui.components.ScorecardHeader
+import com.example.rlock.ui.dialogs.AddAppointmentDialog
+import com.example.rlock.ui.dialogs.AddQuickBlockDialog
 import com.example.rlock.ui.screens.SettingsScreen
 import com.example.rlock.ui.screens.SideQuestScreen
 import com.example.rlock.ui.theme.CrimsonAccent
@@ -56,7 +59,6 @@ import com.example.rlock.ui.theme.CrimsonBorder
 import com.example.rlock.ui.theme.CrimsonTextPrimary
 import com.example.rlock.ui.theme.CrimsonTextSecondary
 import com.example.rlock.ui.theme.GlassDialogBg
-import com.example.rlock.ui.theme.GlassNavBarBg
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,12 +68,15 @@ fun RLockApp(
 ) {
     val agendaBlocks by viewModel.agendaBlocks.collectAsState()
     val scorecard by viewModel.scorecard.collectAsState()
+    val categories by viewModel.categories.collectAsState()
 
     val pagerState = rememberPagerState(pageCount = { 2 })
     val coroutineScope = rememberCoroutineScope()
 
     var showScorecardBottomSheet by remember { mutableStateOf(false) }
     var showSettingsScreen by remember { mutableStateOf(false) }
+    var showAddAppointmentDialog by remember { mutableStateOf(false) }
+    var showAddQuickBlockDialog by remember { mutableStateOf(false) }
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Scaffold(
@@ -176,6 +181,7 @@ fun RLockApp(
                         // Daily Agenda List
                         AgendaList(
                             blocks = agendaBlocks,
+                            categories = categories,
                             onToggleCompletion = { blockId ->
                                 viewModel.toggleBlockCompletion(blockId)
                             },
@@ -195,7 +201,36 @@ fun RLockApp(
                     SideQuestScreen(viewModel = viewModel)
                 }
             }
+
+            if (pagerState.currentPage == 0) {
+                RLockSpeedDialFab(
+                    onAddAppointmentClick = { showAddAppointmentDialog = true },
+                    onQuickAddBlockClick = { showAddQuickBlockDialog = true },
+                    modifier = Modifier.align(Alignment.BottomEnd)
+                )
+            }
         }
+    }
+
+    if (showAddAppointmentDialog) {
+        AddAppointmentDialog(
+            onDismiss = { showAddAppointmentDialog = false },
+            onConfirm = { title, start, end ->
+                viewModel.addAppointment(title, start, end)
+                showAddAppointmentDialog = false
+            }
+        )
+    }
+
+    if (showAddQuickBlockDialog) {
+        AddQuickBlockDialog(
+            categories = categories,
+            onDismiss = { showAddQuickBlockDialog = false },
+            onConfirm = { title, category, start, end, shiftable, fbStart, fbEnd ->
+                viewModel.addQuickBlock(title, category, start, end, shiftable, fbStart, fbEnd)
+                showAddQuickBlockDialog = false
+            }
+        )
     }
 
     if (showScorecardBottomSheet) {

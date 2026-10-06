@@ -40,6 +40,7 @@ import java.time.LocalTime
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddQuickBlockDialog(
+    categories: List<CustomCategory> = CustomCategory.defaultCategories,
     onDismiss: () -> Unit,
     onConfirm: (
         title: String,
@@ -52,7 +53,9 @@ fun AddQuickBlockDialog(
     ) -> Unit
 ) {
     var title by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf(CustomCategory.ROUTINE) }
+    var category by remember {
+        mutableStateOf(categories.firstOrNull { it.id != "appointment" } ?: CustomCategory.ROUTINE)
+    }
     var startHour by remember { mutableStateOf("14") }
     var startMin by remember { mutableStateOf("0") }
     var endHour by remember { mutableStateOf("15") }
@@ -100,7 +103,7 @@ fun AddQuickBlockDialog(
                     onExpandedChange = { categoryExpanded = !categoryExpanded }
                 ) {
                     OutlinedTextField(
-                        value = category.name,
+                        value = "${category.emoji} ${category.name}",
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("Category", color = CrimsonTextSecondary) },
@@ -119,9 +122,9 @@ fun AddQuickBlockDialog(
                         expanded = categoryExpanded,
                         onDismissRequest = { categoryExpanded = false }
                     ) {
-                        CustomCategory.defaultCategories.filter { it.id != "appointment" }.forEach { cat ->
+                        categories.filter { it.id != "appointment" }.forEach { cat ->
                             DropdownMenuItem(
-                                text = { Text(cat.name, color = CrimsonTextPrimary) },
+                                text = { Text("${cat.emoji} ${cat.name}", color = CrimsonTextPrimary) },
                                 onClick = {
                                     category = cat
                                     categoryExpanded = false

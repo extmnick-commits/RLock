@@ -3,6 +3,8 @@ package com.example.rlock.model
 import java.time.LocalTime
 import java.util.UUID
 
+typealias Category = CustomCategory
+
 data class CustomCategory(
     val id: String = UUID.randomUUID().toString(),
     val name: String,
@@ -74,7 +76,9 @@ data class AgendaBlock(
     val fallbackEndTime: LocalTime? = null,
     val subtasks: MutableList<Subtask> = mutableListOf(),
     val isNotificationEnabled: Boolean = false
-)
+) {
+    val category: String get() = categoryName
+}
 
 data class DailyScorecard(
     val metrics: List<MetricGoal>,
