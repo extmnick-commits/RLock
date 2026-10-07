@@ -108,14 +108,16 @@ class RLockViewModel(
         )
 
     init {
-        val isFirstLaunch = prefs.getBoolean("isFirstLaunch", true)
-        if (isFirstLaunch) {
-            loadStarterTemplate()
-            prefs.edit().putBoolean("isFirstLaunch", false).apply()
+        val hasResetFresh = prefs.getBoolean("hasResetFresh_v2", false)
+        if (!hasResetFresh) {
+            clearAllData()
+            prefs.edit().putBoolean("hasResetFresh_v2", true).putBoolean("isFirstLaunch", false).apply()
         } else {
             val savedJson = prefs.getString("backup_data", null)
             if (savedJson != null) {
                 restoreFromBackupJson(savedJson)
+            } else {
+                clearAllData()
             }
         }
     }
@@ -576,7 +578,7 @@ class RLockViewModel(
     }
 
     fun clearAllData() {
-        _categories.value = listOf(CustomCategory.GENERAL)
+        _categories.value = CustomCategory.defaultCategories
         _templates.value = emptyList()
         _metrics.value = emptyList()
         _agendaBlocks.value = emptyList()
