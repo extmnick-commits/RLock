@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1014954037046",
+    "project_id": "rlock-ce530",
+    "storage_bucket": "rlock-ce530.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1014954037046:android:1feacaa8127ef04a49ad97",
+        "android_client_info": {
+          "package_name": "com.example.rlock"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIPvU4jsBWnuJmFf_h5QNso_8edlHhhyA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

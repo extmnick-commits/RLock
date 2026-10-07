@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
+    id("com.google.firebase.appdistribution")
 }
 
 android {
@@ -24,6 +26,11 @@ android {
             optimization {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
+            }
+            firebaseAppDistribution {
+                appId = "1:1014954037046:android:1feacaa8127ef04a49ad97"
+                groups = "qa-testers"
+                releaseNotes = "Release build for RLock testers"
             }
         }
     }
