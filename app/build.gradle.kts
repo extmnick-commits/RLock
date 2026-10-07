@@ -29,8 +29,15 @@ android {
             }
             firebaseAppDistribution {
                 appId = "1:1014954037046:android:1feacaa8127ef04a49ad97"
-                groups = "qa-testers"
+                testers = "extmnick@gmail.com"
                 releaseNotes = "Release build for RLock testers"
+            }
+        }
+        debug {
+            firebaseAppDistribution {
+                appId = "1:1014954037046:android:1feacaa8127ef04a49ad97"
+                testers = "extmnick@gmail.com"
+                releaseNotes = "Debug build for RLock testers"
             }
         }
     }
