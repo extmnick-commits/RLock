@@ -13,12 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +39,7 @@ import com.example.rlock.ui.theme.GlassCrimson
 fun AgendaList(
     blocks: List<AgendaBlock>,
     categories: List<CustomCategory> = emptyList(),
+    focusedBlockId: String? = null,
     onToggleCompletion: (String) -> Unit,
     onToggleSubtask: (String, String) -> Unit,
     onAddSubtask: (String, String) -> Unit,
@@ -72,7 +75,32 @@ fun AgendaList(
             }
         }
 
+        val listState = rememberLazyListState()
+
+        LaunchedEffect(focusedBlockId) {
+            if (focusedBlockId != null && blocks.isNotEmpty()) {
+                var itemIndex = -1
+                var currentIndex = 0
+                for ((_, sectionBlocks) in groupedBlocks) {
+                    currentIndex++ // stickyHeader offset
+                    for (block in sectionBlocks) {
+                        if (block.id == focusedBlockId) {
+                            itemIndex = currentIndex
+                            break
+                        }
+                        currentIndex++
+                    }
+                    if (itemIndex != -1) break
+                }
+
+                if (itemIndex != -1) {
+                    listState.animateScrollToItem(itemIndex)
+                }
+            }
+        }
+
         LazyColumn(
+            state = listState,
             modifier = modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 top = contentPadding.calculateTopPadding() + 8.dp,
@@ -83,7 +111,7 @@ fun AgendaList(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             groupedBlocks.forEach { (sectionHeader, sectionBlocks) ->
-                stickyHeader {
+                stickyHeader(key = "header_$sectionHeader") {
                     Surface(
                         color = CrimsonBackground.copy(alpha = 0.95f),
                         modifier = Modifier
@@ -101,6 +129,7 @@ fun AgendaList(
                     AgendaBlockCard(
                         block = block,
                         categories = categories,
+                        isFocused = (block.id == focusedBlockId),
                         onToggleCompletion = onToggleCompletion,
                         onToggleSubtask = onToggleSubtask,
                         onAddSubtask = onAddSubtask,
@@ -109,7 +138,7 @@ fun AgendaList(
                 }
             }
 
-            item {
+            item(key = "scorecard_button") {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

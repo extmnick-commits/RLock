@@ -76,6 +76,18 @@ class RLockViewModel(
     private val _categories = MutableStateFlow<List<CustomCategory>>(emptyList())
     val categories: StateFlow<List<CustomCategory>> = _categories.asStateFlow()
 
+    val focusedBlockId = MutableStateFlow<String?>(null)
+    val selectedTab = MutableStateFlow(0)
+
+    fun focusOnBlock(id: String) {
+        focusedBlockId.value = id
+        selectedTab.value = 0
+    }
+
+    fun clearFocusedBlock() {
+        focusedBlockId.value = null
+    }
+
     val scorecard: StateFlow<DailyScorecard> = combine(_agendaBlocks, _metrics) { blocks, metrics ->
         DailyScorecard(
             metrics = metrics,
@@ -449,6 +461,16 @@ class RLockViewModel(
                 } else {
                     metric
                 }
+            }
+        }
+        persistData()
+    }
+
+    fun decrementMetric(metricId: String) {
+        _metrics.update { goals ->
+            goals.map { goal ->
+                if (goal.id == metricId) goal.copy(current = (goal.current - 1).coerceAtLeast(0))
+                else goal
             }
         }
         persistData()

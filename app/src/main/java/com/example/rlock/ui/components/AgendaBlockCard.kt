@@ -1,6 +1,7 @@
 package com.example.rlock.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
@@ -76,16 +77,23 @@ fun AgendaBlockCard(
     onAddSubtask: (String, String) -> Unit,
     onEditBlock: (AgendaBlock) -> Unit,
     modifier: Modifier = Modifier,
-    categories: List<CustomCategory> = emptyList()
+    categories: List<CustomCategory> = emptyList(),
+    isFocused: Boolean = false
 ) {
     val isAppointment = block.categoryId == "appointment"
     val isCompleted = block.isCompleted
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    var isExpanded by rememberSaveable(block.id, isFocused) { mutableStateOf(isFocused) }
 
     val context = LocalContext.current
 
-    LaunchedEffect(block) {
-        RLockNotificationManager.updateBlockNotification(context, block)
+    LaunchedEffect(isFocused) {
+        if (isFocused) {
+            isExpanded = true
+        }
+    }
+
+    LaunchedEffect(block, categories) {
+        RLockNotificationManager.updateBlockNotification(context, block, categories)
     }
 
     val cardBg = if (isAppointment) GoldGlassBg else if (block.isDisplaced) GlassCrimsonHighlight else GlassCrimson
@@ -94,6 +102,7 @@ fun AgendaBlockCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
+            .animateContentSize()
             .clip(RoundedCornerShape(20.dp))
             .combinedClickable(
                 onClick = { isExpanded = !isExpanded },

@@ -2,6 +2,8 @@ package com.example.rlock.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,10 +41,12 @@ import com.example.rlock.ui.theme.CrimsonTextSecondary
 import com.example.rlock.ui.theme.GlassCrimson
 import com.example.rlock.ui.theme.GlassCrimsonHighlight
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ScorecardHeader(
     metrics: List<MetricGoal>,
     onIncrementMetric: (String) -> Unit,
+    onDecrementMetric: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -69,22 +73,29 @@ fun ScorecardHeader(
             metrics.forEach { metric ->
                 MetricCard(
                     metric = metric,
-                    onIncrement = { onIncrementMetric(metric.id) }
+                    onIncrement = { onIncrementMetric(metric.id) },
+                    onDecrement = { onDecrementMetric(metric.id) }
                 )
             }
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun MetricCard(
     metric: MetricGoal,
-    onIncrement: () -> Unit
+    onIncrement: () -> Unit,
+    onDecrement: () -> Unit
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = GlassCrimson,
-        border = BorderStroke(1.dp, CrimsonBorder)
+        border = BorderStroke(1.dp, CrimsonBorder),
+        modifier = Modifier.combinedClickable(
+            onClick = onIncrement,
+            onLongClick = onDecrement
+        )
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
@@ -112,10 +123,13 @@ private fun MetricCard(
 
                 // +1 Glass Pill Button
                 Surface(
-                    onClick = onIncrement,
                     shape = RoundedCornerShape(12.dp),
                     color = GlassCrimsonHighlight,
-                    border = BorderStroke(1.dp, CrimsonAccent.copy(alpha = 0.5f))
+                    border = BorderStroke(1.dp, CrimsonAccent.copy(alpha = 0.5f)),
+                    modifier = Modifier.combinedClickable(
+                        onClick = onIncrement,
+                        onLongClick = onDecrement
+                    )
                 ) {
                     Text(
                         text = "+1",

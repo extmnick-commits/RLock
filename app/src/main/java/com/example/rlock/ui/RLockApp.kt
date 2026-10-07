@@ -74,9 +74,15 @@ fun RLockApp(
     val agendaBlocks by viewModel.agendaBlocks.collectAsState()
     val scorecard by viewModel.scorecard.collectAsState()
     val categories by viewModel.categories.collectAsState()
+    val focusedBlockId by viewModel.focusedBlockId.collectAsState()
+    val selectedTab by viewModel.selectedTab.collectAsState()
 
     val pagerState = rememberPagerState(pageCount = { 2 })
     val coroutineScope = rememberCoroutineScope()
+
+    androidx.compose.runtime.LaunchedEffect(selectedTab) {
+        pagerState.animateScrollToPage(selectedTab)
+    }
 
     var showScorecardBottomSheet by remember { mutableStateOf(false) }
     var showSettingsScreen by remember { mutableStateOf(false) }
@@ -125,7 +131,10 @@ fun RLockApp(
                 ) {
                     NavigationBarItem(
                         selected = pagerState.currentPage == 0,
-                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
+                        onClick = {
+                            viewModel.selectedTab.value = 0
+                            coroutineScope.launch { pagerState.animateScrollToPage(0) }
+                        },
                         icon = { Icon(Icons.Default.CalendarToday, contentDescription = "Daily Agenda") },
                         label = {
                             Text(
@@ -144,7 +153,10 @@ fun RLockApp(
                     )
                     NavigationBarItem(
                         selected = pagerState.currentPage == 1,
-                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
+                        onClick = {
+                            viewModel.selectedTab.value = 1
+                            coroutineScope.launch { pagerState.animateScrollToPage(1) }
+                        },
                         icon = { Icon(Icons.Default.CheckCircle, contentDescription = "Side Quests") },
                         label = {
                             Text(
@@ -189,6 +201,9 @@ fun RLockApp(
                             metrics = scorecard.metrics,
                             onIncrementMetric = { metricId ->
                                 viewModel.incrementMetric(metricId, 1)
+                            },
+                            onDecrementMetric = { metricId ->
+                                viewModel.decrementMetric(metricId)
                             }
                         )
 
@@ -196,6 +211,7 @@ fun RLockApp(
                         AgendaList(
                             blocks = agendaBlocks,
                             categories = categories,
+                            focusedBlockId = focusedBlockId,
                             onToggleCompletion = { blockId ->
                                 viewModel.toggleBlockCompletion(blockId)
                             },
